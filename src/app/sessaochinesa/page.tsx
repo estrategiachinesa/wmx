@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, MoveRight, Send, ZoomIn } from 'lucide-react';
+import { Loader2, MoveRight, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -139,7 +139,6 @@ export default function SessaoChinesaPage() {
                   Confirmar ID
                 </Button>
                 <Button variant="secondary" className="w-full sm:w-auto" disabled>
-                  <ZoomIn className="mr-2 h-4 w-4" />
                   Entrar na Sessão
                 </Button>
               </CardFooter>

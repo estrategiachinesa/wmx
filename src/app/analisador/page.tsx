@@ -29,6 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import { isMarketOpenForAsset } from '@/lib/market-hours';
 import { Button } from '@/components/ui/button';
 import { Download, ExternalLink } from 'lucide-react';
+import Link from 'next/link';
 
 
 export type Asset = 
@@ -143,7 +144,7 @@ export default function AnalisadorPage() {
     asset: 'EUR/JPY',
     expirationTime: '1m',
   });
-  const indicatorLink = 'https://estrategiachinesa.github.io/vip/';
+  const indicatorLink = '/vip';
   const affiliateLink = 'https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=';
   
   useEffect(() => {
@@ -407,10 +408,10 @@ export default function AnalisadorPage() {
                     </a>
                 </Button>
                 <Button asChild className='w-full bg-green-600 hover:bg-green-700'>
-                    <a href={indicatorLink} target="_blank" rel="noopener noreferrer">
+                    <Link href={indicatorLink}>
                        <Download className="mr-2 h-4 w-4" />
                        Baixar o indicador
-                    </a>
+                    </Link>
                 </Button>
             </DialogFooter>
         </DialogContent>

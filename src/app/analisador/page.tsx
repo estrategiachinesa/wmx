@@ -401,13 +401,13 @@ export default function AnalisadorPage() {
                 </DialogDescription>
             </DialogHeader>
             <DialogFooter className="flex-col !space-x-0 gap-2 sm:!flex-col sm:!space-x-0 sm:gap-2">
-                 <Button asChild className='w-full bg-blue-600 hover:bg-blue-700'>
+                 <Button asChild className='w-full bg-blue-600 hover:bg-blue-700 text-primary-foreground'>
                     <a href={affiliateLink} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="mr-2 h-4 w-4" />
                         Cadastrar agora
                     </a>
                 </Button>
-                <Button asChild className='w-full bg-green-600 hover:bg-green-700'>
+                <Button asChild className='w-full bg-green-600 hover:bg-green-700 text-primary-foreground'>
                     <Link href={indicatorLink}>
                        <Download className="mr-2 h-4 w-4" />
                        Baixar o indicador

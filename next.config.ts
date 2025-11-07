@@ -1,7 +1,14 @@
 import type {NextConfig} from 'next';
 
+const repo = 'traderchines';
+const assetPrefix = `/${repo}/`;
+const basePath = `/${repo}`;
+
 const nextConfig: NextConfig = {
   /* config options here */
+  output: 'export',
+  assetPrefix: assetPrefix,
+  basePath: basePath,
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -10,28 +17,6 @@ const nextConfig: NextConfig = {
   },
   images: {
     unoptimized: true,
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-        port: '',
-        pathname: '/**',
-      },
-    ],
-  },
-  async redirects() {
-    return [
-      {
-        source: '/aviso',
-        destination: '/sinais',
-        permanent: true,
-      },
-      {
-        source: '/estrategiachinesa',
-        destination: '/sinais',
-        permanent: true,
-      },
-    ]
   },
 };
 

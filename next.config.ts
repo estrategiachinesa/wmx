@@ -25,20 +25,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  async redirects() {
-    return [
-      {
-        source: '/aviso',
-        destination: '/sinais',
-        permanent: true,
-      },
-      {
-        source: '/estrategiachinesa',
-        destination: '/sinais',
-        permanent: true,
-      },
-    ]
-  },
 };
 
 export default nextConfig;

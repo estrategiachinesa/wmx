@@ -1,6 +1,6 @@
 import type {NextConfig} from 'next';
 
-const repoName = 'vip';
+const repoName = 'estrategiachinesa';
 
 const nextConfig: NextConfig = {
   /* config options here */

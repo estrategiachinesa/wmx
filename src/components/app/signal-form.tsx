@@ -53,7 +53,7 @@ export function SignalForm({ formData, setFormData, onSubmit, isLoading, showOTC
     <div className="w-full space-y-8 text-center">
       <div>
         <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl font-headline">
-          SINAIS DO<br />TRADER CHINES
+          ESTRATÉGIA<br />CHINESA
         </h1>
         <p className="mt-4 text-lg text-foreground/80">
           Escolha o ativo e o tempo de expiração para receber sinais automáticos em tempo real.

@@ -5,7 +5,7 @@ import { ArrowRight, Send } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LinksPage() {
-  const telegramLink = 'https://t.me/seu_grupo_telegram'; // TODO: Replace with your Telegram link
+  const telegramLink = 'https://t.me/TraderChinesVIP';
 
   return (
     <>

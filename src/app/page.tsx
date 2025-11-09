@@ -49,52 +49,67 @@ export default function LoginPage() {
 
   const handleAuthAction: SubmitHandler<FormFields> = async ({ email, password }) => {
     setIsLoading(true);
-    try {
-      if (isRegistering) {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const newUser = userCredential.user;
+    if (isRegistering) {
+        // --- Registration Flow ---
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const newUser = userCredential.user;
 
-        // Create user profile in Firestore
-        if(newUser && firestore) {
-           const userProfile = {
-                uid: newUser.uid,
-                email: newUser.email,
-                displayName: newUser.email?.split('@')[0] || '',
-                createdAt: serverTimestamp(),
-            };
-            const userDocRef = doc(firestore, 'users', newUser.uid);
-            // Use the non-blocking update
-            setDocumentNonBlocking(userDocRef, userProfile, { merge: true });
+            // Create user profile in Firestore in a non-blocking way
+            if (newUser && firestore) {
+                const userProfile = {
+                    uid: newUser.uid,
+                    email: newUser.email,
+                    displayName: newUser.email?.split('@')[0] || '',
+                    createdAt: serverTimestamp(),
+                };
+                const userDocRef = doc(firestore, 'users', newUser.uid);
+                // Use the non-blocking update which handles its own errors
+                setDocumentNonBlocking(userDocRef, userProfile, { merge: true });
+            }
+            
+            toast({
+              title: 'Cadastro bem-sucedido!',
+              description: 'Você agora pode fazer login.',
+            });
+            setIsRegistering(false); // Switch back to login view
+        } catch (error: any) {
+            console.error("Firebase registration error:", error);
+            let description = 'Ocorreu um erro. Tente novamente.';
+            if (error.code === 'auth/email-already-in-use') {
+                description = 'Este e-mail já está em uso.';
+            }
+            toast({
+                variant: 'destructive',
+                title: 'Falha no Cadastro',
+                description,
+            });
+        } finally {
+            setIsLoading(false);
         }
-        
-        toast({
-          title: 'Cadastro bem-sucedido!',
-          description: 'Você agora pode fazer login.',
-        });
-        setIsRegistering(false); // Switch back to login view
-      } else {
-        await signInWithEmailAndPassword(auth, email, password);
-        toast({
-          title: 'Login bem-sucedido!',
-          description: 'Redirecionando para o analisador.',
-        });
-        // The useEffect will handle the redirect
-      }
-    } catch (error: any) {
-      console.error("Firebase auth error:", error);
-      let description = 'Ocorreu um erro. Tente novamente.';
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        description = 'E-mail ou senha incorretos.';
-      } else if (error.code === 'auth/email-already-in-use') {
-        description = 'Este e-mail já está em uso.';
-      }
-      toast({
-        variant: 'destructive',
-        title: isRegistering ? 'Falha no Cadastro' : 'Falha no Login',
-        description,
-      });
-    } finally {
-      setIsLoading(false);
+    } else {
+        // --- Login Flow ---
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            toast({
+              title: 'Login bem-sucedido!',
+              description: 'Redirecionando para o analisador.',
+            });
+            // The useEffect will handle the redirect
+        } catch (error: any) {
+            console.error("Firebase login error:", error);
+            let description = 'Ocorreu um erro. Tente novamente.';
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                description = 'E-mail ou senha incorretos.';
+            }
+            toast({
+                variant: 'destructive',
+                title: 'Falha no Login',
+                description,
+            });
+        } finally {
+            setIsLoading(false);
+        }
     }
   };
 

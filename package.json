@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack -p 9002",
-    "build": "NODE_ENV=production next build",
-    "build:static": "next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
@@ -36,7 +35,6 @@
     "clsx": "^2.1.1",
     "date-fns": "^3.6.0",
     "embla-carousel-react": "^8.6.0",
-    "firebase": "^10.12.3",
     "lucide-react": "^0.475.0",
     "next": "15.3.3",
     "react": "^18.3.1",

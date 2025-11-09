@@ -9,43 +9,19 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { LineChart, Loader2 } from 'lucide-react';
-import { useFirestore } from '@/firebase';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
 import Link from 'next/link';
+
+// Simple in-memory "database" for credentials.
+// In a real static site, this is just for show or a simple gate.
+const SHARED_USER = 'admin';
+const SHARED_PASSWORD = 'admin';
+
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const firestore = useFirestore();
   const [isLoading, setIsLoading] = useState(false);
   const [credentials, setCredentials] = useState({ user: '', password: '' });
-
-  // Effect to set up initial credentials if they don't exist
-  useEffect(() => {
-    const setupInitialCredentials = async () => {
-      if (!firestore) return;
-      const credsDocRef = doc(firestore, 'shared-access', 'credentials');
-      const credsDoc = await getDoc(credsDocRef);
-      if (!credsDoc.exists()) {
-        try {
-          await setDoc(credsDocRef, {
-            user: 'admin',
-            password: 'admin',
-          });
-          console.log('Initial credentials (admin/admin) have been set in Firestore.');
-        } catch (error) {
-          console.error("Error setting initial credentials:", error);
-           toast({
-            variant: 'destructive',
-            title: 'Erro de Configuração Inicial',
-            description: 'Não foi possível definir as credenciais iniciais. Verifique as regras de segurança do Firestore.',
-          });
-        }
-      }
-    };
-    setupInitialCredentials();
-  }, [firestore, toast]);
-
 
   useEffect(() => {
     // Check if user is already logged in via local storage
@@ -78,15 +54,6 @@ export default function LoginPage() {
   const handleLogin = async () => {
     setIsLoading(true);
 
-    if (!firestore) {
-      toast({
-        variant: 'destructive',
-        title: 'Erro de Configuração',
-        description: 'O serviço de banco de dados não está disponível.',
-      });
-      setIsLoading(false);
-      return;
-    }
     if (!credentials.user || !credentials.password) {
         toast({
             variant: 'destructive',
@@ -96,22 +63,12 @@ export default function LoginPage() {
         setIsLoading(false);
         return;
     }
-
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     try {
-      // 1. Fetch the shared credentials from Firestore
-      const credsDocRef = doc(firestore, 'shared-access', 'credentials');
-      const credsDoc = await getDoc(credsDocRef);
-
-      if (!credsDoc.exists()) {
-        throw new Error('Documento de credenciais não encontrado. Tente novamente em alguns segundos.');
-      }
-
-      const { user: correctUser, password: correctPassword } = credsDoc.data();
-
-      // 2. Compare with the entered credentials
-      if (credentials.user === correctUser && credentials.password === correctPassword) {
-        // 3. On success, set a session flag and redirect
+      if (credentials.user === SHARED_USER && credentials.password === SHARED_PASSWORD) {
         localStorage.setItem('isLoggedIn', 'true');
         localStorage.setItem('loginTimestamp', Date.now().toString());
         toast({
@@ -120,7 +77,6 @@ export default function LoginPage() {
         });
         router.push('/analisador');
       } else {
-        // 4. On failure, show an error
         toast({
           variant: 'destructive',
           title: 'Falha no Login',
@@ -132,7 +88,7 @@ export default function LoginPage() {
       toast({
         variant: 'destructive',
         title: 'Erro no Login',
-        description: error.message || 'Não foi possível verificar as credenciais. Tente novamente.',
+        description: error.message || 'Ocorreu um erro inesperado.',
       });
     } finally {
       setIsLoading(false);

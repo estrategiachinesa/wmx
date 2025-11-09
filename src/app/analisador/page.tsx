@@ -142,9 +142,9 @@ export default function AnalisadorPage() {
     } else {
       localStorage.removeItem('isLoggedIn');
       localStorage.removeItem('loginTimestamp');
-      router.push('/');
+      setAccessState('denied');
     }
-  }, [router]);
+  }, []);
 
 
   useEffect(() => {

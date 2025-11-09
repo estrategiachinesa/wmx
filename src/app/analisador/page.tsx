@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -17,6 +18,7 @@ import { SignalForm } from '@/components/app/signal-form';
 import { SignalResult } from '@/components/app/signal-result';
 import { isMarketOpenForAsset } from '@/lib/market-hours';
 import { Loader2 } from 'lucide-react';
+import { useFirebase } from '@/firebase';
 
 export type Asset = 
   | 'EUR/USD' | 'EUR/USD (OTC)'
@@ -109,6 +111,7 @@ function generateClientSideSignal(asset: Asset, expirationTimeLabel: '1 minute' 
 
 export default function AnalisadorPage() {
   const router = useRouter();
+  const { auth, user, isUserLoading } = useFirebase();
   const [accessState, setAccessState] = useState<AccessState>('checking');
   const [appState, setAppState] = useState<AppState>('idle');
   const [signalData, setSignalData] = useState<SignalData | null>(null);
@@ -121,8 +124,18 @@ export default function AnalisadorPage() {
   });
   
   useEffect(() => {
-    // Check for access on component mount
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (isUserLoading) {
+        setAccessState('checking');
+        return;
+    }
+
+    if (!user) {
+        // If no user is logged in after checks, deny access
+        setAccessState('denied');
+        return;
+    }
+
+    // Check for session expiry from local storage
     const loginTime = localStorage.getItem('loginTimestamp');
     let sessionExpired = false;
 
@@ -136,15 +149,14 @@ export default function AnalisadorPage() {
       sessionExpired = true;
     }
 
-
-    if (isLoggedIn && !sessionExpired) {
-      setAccessState('granted');
+    if (sessionExpired) {
+        auth.signOut(); // Sign out the user from Firebase
+        localStorage.removeItem('loginTimestamp');
+        setAccessState('denied');
     } else {
-      localStorage.removeItem('isLoggedIn');
-      localStorage.removeItem('loginTimestamp');
-      setAccessState('denied');
+        setAccessState('granted');
     }
-  }, []);
+  }, [user, isUserLoading, auth]);
 
 
   useEffect(() => {
@@ -264,7 +276,7 @@ export default function AnalisadorPage() {
   };
   
   const handleLogout = async () => {
-    localStorage.removeItem('isLoggedIn');
+    await auth.signOut();
     localStorage.removeItem('loginTimestamp');
     router.push('/');
   }
@@ -287,7 +299,7 @@ export default function AnalisadorPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Acesso Negado</AlertDialogTitle>
             <AlertDialogDescription>
-              Sua sessão expirou ou não é válida. Por favor, retorne à página inicial para entrar novamente.
+              Sua sessão expirou ou você não tem permissão para acessar. Por favor, retorne à página inicial para entrar novamente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

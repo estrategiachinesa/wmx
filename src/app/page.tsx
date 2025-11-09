@@ -10,41 +10,23 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { LineChart, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-
-// Simple in-memory "database" for credentials.
-// In a real static site, this is just for show or a simple gate.
-const SHARED_USER = 'admin';
-const SHARED_PASSWORD = 'admin';
-
+import { useFirebase } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [credentials, setCredentials] = useState({ user: '', password: '' });
+  const { auth, isUserLoading, user } = useFirebase();
 
   useEffect(() => {
-    // Check if user is already logged in via local storage
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    const loginTime = localStorage.getItem('loginTimestamp');
-    let sessionExpired = false;
-
-    if (loginTime) {
-      const hoursSinceLogin = (Date.now() - parseInt(loginTime)) / (1000 * 60 * 60);
-      if (hoursSinceLogin >= 1) {
-        sessionExpired = true;
-      }
-    } else {
-      sessionExpired = true;
-    }
-    
-    if (isLoggedIn && !sessionExpired) {
+    // Redirect if user is already logged in
+    if (!isUserLoading && user) {
+        // We can also add session validation logic here if needed
         router.push('/analisador');
-    } else {
-        localStorage.removeItem('isLoggedIn');
-        localStorage.removeItem('loginTimestamp');
     }
-  }, [router]);
+  }, [user, isUserLoading, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -64,36 +46,45 @@ export default function LoginPage() {
         return;
     }
     
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-
     try {
-      if (credentials.user === SHARED_USER && credentials.password === SHARED_PASSWORD) {
-        localStorage.setItem('isLoggedIn', 'true');
+        await signInWithEmailAndPassword(auth, credentials.user, credentials.password);
+        // The useEffect hook will handle the redirection on successful login
         localStorage.setItem('loginTimestamp', Date.now().toString());
         toast({
           title: 'Login bem-sucedido!',
           description: 'Redirecionando para o analisador...',
         });
-        router.push('/analisador');
-      } else {
-        toast({
-          variant: 'destructive',
-          title: 'Falha no Login',
-          description: 'Usuário ou senha incorretos.',
-        });
-      }
     } catch (error: any) {
       console.error("Login error:", error);
+      let description = 'Ocorreu um erro inesperado.';
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+          description = 'Usuário ou senha incorretos.';
+      }
       toast({
         variant: 'destructive',
-        title: 'Erro no Login',
-        description: error.message || 'Ocorreu um erro inesperado.',
+        title: 'Falha no Login',
+        description: description,
       });
     } finally {
       setIsLoading(false);
     }
   };
+  
+   // While checking user auth, show a loader
+  if (isUserLoading) {
+      return (
+          <div className="flex h-screen w-full items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin" />
+              <p className="ml-2">Carregando...</p>
+          </div>
+      )
+  }
+  
+  // If user is logged in, this page will redirect, so we can render null or a loader.
+  // This prevents the login form from flashing briefly for an already logged-in user.
+  if(user) {
+      return null;
+  }
 
   return (
     <>
@@ -110,21 +101,21 @@ export default function LoginPage() {
                </div>
             </div>
             <CardTitle className="font-headline text-3xl">Estratégia Chinesa</CardTitle>
-            <CardDescription>Acesse com as credenciais compartilhadas</CardDescription>
+            <CardDescription>Acesse com suas credenciais</CardDescription>
              <Button variant="link" size="sm" className="w-full text-blue-400" asChild>
                 <Link href="https://t.me/Trader_Chines" target="_blank">
-                  Solicite o acesso pelo Telegram
+                  Problemas com o acesso? Fale conosco
                 </Link>
               </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="user">Usuário</Label>
+              <Label htmlFor="user">Email</Label>
               <Input
                 id="user"
                 name="user"
-                type="text"
-                placeholder="Compartilhado no Telegram"
+                type="email"
+                placeholder="seu@email.com"
                 value={credentials.user}
                 onChange={handleInputChange}
                 disabled={isLoading}

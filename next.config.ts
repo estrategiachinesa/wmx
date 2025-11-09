@@ -2,8 +2,8 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   output: 'export',
-  basePath: '/i.a..',
-  assetPrefix: '/i.a../',
+  basePath: '/ia',
+  assetPrefix: '/ia/',
   typescript: {
     ignoreBuildErrors: true,
   },

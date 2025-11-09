@@ -8,12 +8,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { BarChart, Loader2, Lock } from 'lucide-react';
+import { BarChart, Info, Loader2, Lock } from 'lucide-react';
 import type { FormData, Asset } from '@/app/analisador/page';
 import { CurrencyFlags } from './currency-flags';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { useEffect } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import Link from 'next/link';
 
 type SignalFormProps = {
   formData: FormData;
@@ -100,6 +102,22 @@ export function SignalForm({ formData, setFormData, onSubmit, isLoading, showOTC
               ))}
             </SelectContent>
           </Select>
+           {showOTC && (
+            <Alert className="mt-4">
+              <Info className="h-4 w-4" />
+              <AlertDescription className="text-xs text-foreground/80">
+                Sinais OTC são exclusivos para as corretoras:
+                <Link href="https://affiliate.iqoption.net/redir/?aff=198544&aff_model=revenue&afftrack=" target="_blank" className="font-bold underline hover:text-primary mx-1">
+                  IQ Option
+                </Link>
+                e
+                <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank" className="font-bold underline hover:text-primary ml-1">
+                  Exnova
+                </Link>
+                .
+              </AlertDescription>
+            </Alert>
+          )}
         </div>
 
         <div className="space-y-2">

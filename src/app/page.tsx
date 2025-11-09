@@ -11,8 +11,11 @@ import { LineChart, Loader2 } from 'lucide-react';
 import { useForm, SubmitHandler } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useAuth, useUser } from '@/firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { useAuth, useUser, useFirestore } from '@/firebase';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+
 
 const formSchema = z.object({
   email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
@@ -27,6 +30,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
   const auth = useAuth();
+  const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
 
   const {
@@ -47,7 +51,22 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       if (isRegistering) {
-        await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const newUser = userCredential.user;
+
+        // Create user profile in Firestore
+        if(newUser && firestore) {
+           const userProfile = {
+                uid: newUser.uid,
+                email: newUser.email,
+                displayName: newUser.displayName || '',
+                createdAt: serverTimestamp(),
+            };
+            const userDocRef = doc(firestore, 'users', newUser.uid);
+            // Use the non-blocking update
+            setDocumentNonBlocking(userDocRef, userProfile, { merge: true });
+        }
+        
         toast({
           title: 'Cadastro bem-sucedido!',
           description: 'Você agora pode fazer login.',

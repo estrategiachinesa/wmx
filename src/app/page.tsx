@@ -154,7 +154,7 @@ export default function LoginPage() {
             <CardDescription>Acesse com as credenciais compartilhadas</CardDescription>
              <Button variant="link" size="sm" className="w-full text-blue-400" asChild>
                 <Link href="https://t.me/Trader_Chines" target="_blank">
-                  solicite acesso pelo Telegram
+                  Solicite o acesso pelo Telegram
                 </Link>
               </Button>
           </CardHeader>

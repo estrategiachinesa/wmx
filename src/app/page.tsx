@@ -59,7 +59,7 @@ export default function LoginPage() {
            const userProfile = {
                 uid: newUser.uid,
                 email: newUser.email,
-                displayName: newUser.displayName || '',
+                displayName: newUser.email?.split('@')[0] || '',
                 createdAt: serverTimestamp(),
             };
             const userDocRef = doc(firestore, 'users', newUser.uid);

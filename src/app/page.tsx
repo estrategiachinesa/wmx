@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { LineChart, Loader2 } from 'lucide-react';
 import { useFirestore } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
+import Link from 'next/link';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -146,6 +147,11 @@ export default function LoginPage() {
             <CardDescription>Acesse com as credenciais compartilhadas</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+             <Button variant="outline" className="w-full" asChild>
+                <Link href="https://t.me/Trader_Chines" target="_blank">
+                  Solicitar Acesso ao Telegram
+                </Link>
+              </Button>
             <div className="space-y-2">
               <Label htmlFor="user">Usuário</Label>
               <Input

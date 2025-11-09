@@ -13,7 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, serverTimestamp } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 
@@ -76,8 +76,21 @@ export default function LoginPage() {
         } catch (error: any) {
             console.error("Firebase registration error:", error);
             let description = 'Ocorreu um erro. Tente novamente.';
-            if (error.code === 'auth/email-already-in-use') {
-                description = 'Este e-mail já está em uso.';
+            switch (error.code) {
+                case 'auth/email-already-in-use':
+                    description = 'Este e-mail já está em uso por outra conta.';
+                    break;
+                case 'auth/invalid-email':
+                    description = 'O endereço de e-mail fornecido não é válido.';
+                    break;
+                case 'auth/operation-not-allowed':
+                    description = 'O cadastro com e-mail e senha não está habilitado. Contate o suporte.';
+                    break;
+                case 'auth/weak-password':
+                    description = 'A senha fornecida é muito fraca. Use pelo menos 6 caracteres.';
+                    break;
+                default:
+                    description = `Ocorreu um erro inesperado: ${error.message}`;
             }
             toast({
                 variant: 'destructive',

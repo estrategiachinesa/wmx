@@ -29,7 +29,7 @@
     }
   },
   "auth": {
-    "providers": ["password", "google.com"]
+    "providers": ["google.com"]
   },
   "firestore": {
     "structure": [

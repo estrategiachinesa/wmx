@@ -3,27 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { LineChart, Loader2 } from 'lucide-react';
-import { useForm, SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { useAuth, useUser, useFirestore } from '@/firebase';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, type User } from 'firebase/auth';
-import { doc, serverTimestamp, getDoc } from 'firebase/firestore';
+import { signInWithPopup, GoogleAuthProvider, type User } from 'firebase/auth';
+import { doc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { Separator } from '@/components/ui/separator';
 
-
-const formSchema = z.object({
-  email: z.string().email({ message: 'Por favor, insira um e-mail válido.' }),
-  password: z.string().min(6, { message: 'A senha deve ter pelo menos 6 caracteres.' }),
-});
-
-type FormFields = z.infer<typeof formSchema>;
 
 const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px" {...props}>
@@ -39,18 +26,9 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isRegistering, setIsRegistering] = useState(false);
   const auth = useAuth();
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<FormFields>({
-    resolver: zodResolver(formSchema),
-  });
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -76,61 +54,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleAuthAction: SubmitHandler<FormFields> = async ({ email, password }) => {
-    setIsLoading(true);
-    try {
-      if (isRegistering) {
-        // --- Registration Flow ---
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await ensureUserProfile(userCredential.user);
-        toast({
-          title: 'Cadastro bem-sucedido!',
-          description: 'Você agora pode fazer login.',
-        });
-        setIsRegistering(false); // Switch back to login view
-      } else {
-        // --- Login Flow ---
-        await signInWithEmailAndPassword(auth, email, password);
-        toast({
-          title: 'Login bem-sucedido!',
-          description: 'Redirecionando para o analisador.',
-        });
-        // The useEffect will handle the redirect
-      }
-    } catch (error: any) {
-      console.error("Firebase auth error:", error);
-      let description = 'Ocorreu um erro. Tente novamente.';
-      switch (error.code) {
-        case 'auth/email-already-in-use':
-          description = 'Este e-mail já está em uso por outra conta.';
-          break;
-        case 'auth/invalid-email':
-          description = 'O endereço de e-mail fornecido não é válido.';
-          break;
-        case 'auth/operation-not-allowed':
-          description = 'Login com e-mail e senha não está habilitado.';
-          break;
-        case 'auth/weak-password':
-          description = 'A senha fornecida é muito fraca.';
-          break;
-        case 'auth/user-not-found':
-        case 'auth/wrong-password':
-        case 'auth/invalid-credential':
-          description = 'E-mail ou senha incorretos.';
-          break;
-        default:
-          description = `Ocorreu um erro inesperado.`;
-      }
-      toast({
-        variant: 'destructive',
-        title: isRegistering ? 'Falha no Cadastro' : 'Falha no Login',
-        description,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     if (!auth) {
@@ -179,60 +102,13 @@ export default function LoginPage() {
                </div>
             </div>
             <CardTitle className="font-headline text-2xl">Estratégia Chinesa</CardTitle>
-            <CardDescription>{isRegistering ? 'Crie sua conta para continuar' : 'Acesse sua conta para continuar'}</CardDescription>
+            <CardDescription>Acesse sua conta para continuar</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(handleAuthAction)} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  {...register('email')}
-                  disabled={isLoading}
-                />
-                {errors.email && <p className="text-destructive text-xs">{errors.email.message}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Sua senha"
-                  {...register('password')}
-                  disabled={isLoading}
-                />
-                {errors.password && <p className="text-destructive text-xs">{errors.password.message}</p>}
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isRegistering ? 'Cadastrar' : 'Entrar'}
-              </Button>
-            </form>
-
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">
-                  Ou continue com
-                </span>
-              </div>
-            </div>
-            
             <Button variant="outline" className="w-full" onClick={handleGoogleSignIn} disabled={isLoading}>
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <GoogleIcon className="mr-2" />}
-                Google
+                Entrar com Google
             </Button>
-
-            <div className="mt-4 text-center text-sm">
-              {isRegistering ? 'Já tem uma conta?' : 'Não tem uma conta?'}
-              <Button variant="link" onClick={() => setIsRegistering(!isRegistering)} className="pl-1">
-                {isRegistering ? 'Faça login' : 'Cadastre-se'}
-              </Button>
-            </div>
           </CardContent>
         </Card>
         <footer className="w-full text-center text-[0.6rem] text-foreground/50 p-4 mt-8">

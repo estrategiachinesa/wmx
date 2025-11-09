@@ -51,7 +51,7 @@ export default function LoginPage() {
        const loginTime = localStorage.getItem('loginTimestamp');
        if (loginTime) {
          const hoursSinceLogin = (Date.now() - parseInt(loginTime)) / (1000 * 60 * 60);
-         if (hoursSinceLogin < 24) {
+         if (hoursSinceLogin < 1) {
             router.push('/analisador');
          } else {
             localStorage.removeItem('isLoggedIn');

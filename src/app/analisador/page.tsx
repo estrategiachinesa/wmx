@@ -128,7 +128,7 @@ export default function AnalisadorPage() {
 
     if (loginTime) {
       const hoursSinceLogin = (Date.now() - parseInt(loginTime)) / (1000 * 60 * 60);
-      if (hoursSinceLogin >= 24) {
+      if (hoursSinceLogin >= 1) {
         sessionExpired = true;
       }
     } else {

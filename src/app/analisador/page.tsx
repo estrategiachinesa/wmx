@@ -286,8 +286,7 @@ export default function AnalisadorPage() {
     <>
       <div className="fixed inset-0 -z-10 h-full w-full bg-background"></div>
       <div className="flex flex-col min-h-screen">
-        <header className="p-4 flex justify-between items-center">
-           <span className="text-sm text-foreground/70">Acesso compartilhado</span>
+        <header className="p-4 flex justify-end items-center">
            <button onClick={handleLogout} className="text-sm text-foreground/70 hover:text-foreground">
             Sair
           </button>

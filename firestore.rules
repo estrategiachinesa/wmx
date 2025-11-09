@@ -1,0 +1,54 @@
+/**
+ * @fileoverview Firestore Security Rules for Chinese Trading Strategies.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a basic level of access control for Chinese trading strategies,
+ * allowing only authenticated users to create, update, and delete strategies.
+ * Read access is public.
+ *
+ * Data Structure:
+ * All Chinese strategy documents are stored in the top-level `/chineseStrategies` collection.
+ *
+ * Key Security Decisions:
+ * - Public read access for all strategies.
+ * - Authenticated users can create, update, and delete strategies.
+ * - No user-specific ownership or roles are enforced.
+ *
+ * Denormalization for Authorization:
+ * There is no need for denormalization because the authorization is based solely on
+ * the user's authentication state, not on any data within the documents themselves.
+ *
+ * Structural Segregation:
+ * There is no segregation, as all strategies are stored in a single collection.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Grants public read access to Chinese strategies, but restricts writes to authenticated users.
+     * @path /chineseStrategies/{chineseStrategyId}
+     * @allow (get, list): Any user can read Chinese strategies.
+     * @allow (create): An authenticated user can create a new strategy.
+     * @allow (update, delete): An authenticated user can update or delete a strategy.
+     * @deny (create): An unauthenticated user cannot create a new strategy.
+     * @deny (update, delete): An unauthenticated user cannot update or delete a strategy.
+     * @principle Allows anyone to read, but requires authentication for write operations.
+     */
+    match /chineseStrategies/{chineseStrategyId} {
+      // Read permissions: public access.
+      allow get: if true;
+      allow list: if true;
+
+      // Write permissions: only authenticated users can create, update, and delete.
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    // Define helper functions.
+    function isSignedIn() {
+      return request.auth != null;
+    }
+  }
+}

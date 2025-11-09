@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "ChineseStrategy": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ChineseStrategy",
+      "type": "object",
+      "description": "Represents a Chinese trading strategy.  This entity stores the details of a specific trading strategy, including its name, description, and rules.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Chinese Strategy entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the trading strategy."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed explanation of the strategy, including its principles and rules."
+        },
+        "rules": {
+          "type": "string",
+          "description": "The specific rules that define the strategy. Includes entry and exit criteria"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "The date and time when the strategy was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "The date and time when the strategy was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "rules",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/chineseStrategies/{chineseStrategyId}",
+        "definition": {
+          "entityName": "ChineseStrategy",
+          "schema": {
+            "$ref": "#/backend/entities/ChineseStrategy"
+          },
+          "description": "Stores all Chinese strategy documents.",
+          "params": [
+            {
+              "name": "chineseStrategyId",
+              "description": "The unique identifier for a Chinese strategy document."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to store Chinese trading strategies. The design prioritizes simplicity and avoids complex authorization logic. All Chinese Strategy documents are stored in a single collection, `/chineseStrategies`, simplifying querying and management. Since there are no user-specific strategies or roles, authorization is focused on preventing unauthorized data manipulation, which can be achieved through basic security rules ensuring only authenticated users can create and modify strategies. This design eliminates the need for complex nested collections or denormalized authorization data, making it easy to understand and maintain. It supports secure listing operations (QAPs) because all documents in the collection share the same security posture."
+  }
+}

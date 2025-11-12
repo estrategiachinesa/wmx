@@ -384,6 +384,8 @@ export default function AnalisadorPage() {
                 signalsLeft={signalsLeft}
                 limitResetTime={limitResetTime}
                 hasReachedLimit={hasReachedLimit}
+                user={user}
+                firestore={useFirebase().firestore}
               />
              ) : (
               signalData && <SignalResult data={signalData} onReset={handleReset} />

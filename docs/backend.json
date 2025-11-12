@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "ChineseStrategy": {
@@ -41,6 +42,47 @@
         "createdAt",
         "updatedAt"
       ]
+    },
+    "VipRequest": {
+      "title": "VIP Access Request",
+      "description": "Stores a user's request for VIP access after signing up through an affiliate link.",
+      "type": "object",
+      "properties": {
+        "brokerId": {
+          "type": "string",
+          "description": "The user's ID from the brokerage account.",
+          "pattern": "^[0-9]{8,}$"
+        },
+        "userId": {
+          "type": "string",
+          "description": "The Firebase Authentication UID of the user."
+        },
+        "userEmail": {
+          "type": "string",
+          "format": "email",
+          "description": "The email of the user requesting access."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the VIP request.",
+          "enum": [
+            "PENDING",
+            "APPROVED",
+            "REJECTED"
+          ]
+        },
+        "submittedAt": {
+          "type": "string",
+          "description": "The date and time when the request was submitted.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "brokerId",
+        "userId",
+        "status",
+        "submittedAt"
+      ]
     }
   },
   "auth": {
@@ -66,8 +108,24 @@
             }
           ]
         }
+      },
+      {
+        "path": "/vipRequests/{userId}",
+        "definition": {
+          "entityName": "VipRequest",
+          "schema": {
+            "$ref": "#/backend/entities/VipRequest"
+          },
+          "description": "Stores VIP access requests from users. The document ID is the user's Firebase UID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The Firebase Authentication UID of the user."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to store Chinese trading strategies. The design prioritizes simplicity and avoids complex authorization logic. All Chinese Strategy documents are stored in a single collection, `/chineseStrategies`, simplifying querying and management. Since there are no user-specific strategies or roles, authorization is focused on preventing unauthorized data manipulation, which can be achieved through basic security rules ensuring only authenticated users can create and modify strategies. This design eliminates the need for complex nested collections or denormalized authorization data, making it easy to understand and maintain. It supports secure listing operations (QAPs) because all documents in the collection share the same security posture."
+    "reasoning": "The Firestore structure is designed to store Chinese trading strategies and VIP access requests. The design prioritizes simplicity. All Chinese Strategy documents are stored in a single collection, `/chineseStrategies`. VIP requests are stored in `/vipRequests`, with the document ID being the user's UID to ensure each user can only have one request, simplifying management and validation. This supports secure operations as rules can be applied based on user authentication state and document ownership."
   }
 }

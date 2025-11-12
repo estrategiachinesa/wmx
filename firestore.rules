@@ -1,25 +1,27 @@
+
 /**
  * @fileoverview Firestore Security Rules for Chinese Trading Strategies.
  *
  * Core Philosophy:
- * This ruleset enforces a basic level of access control for Chinese trading strategies,
- * allowing only authenticated users to create, update, and delete strategies.
- * Read access is public.
+ * This ruleset enforces access control for Chinese trading strategies and VIP access requests.
  *
  * Data Structure:
- * All Chinese strategy documents are stored in the top-level `/chineseStrategies` collection.
+ * - `/chineseStrategies/{chineseStrategyId}`: Stores trading strategies.
+ * - `/vipRequests/{userId}`: Stores VIP access requests.
  *
  * Key Security Decisions:
- * - Public read access for all strategies.
- * - Authenticated users can create, update, and delete strategies.
- * - No user-specific ownership or roles are enforced.
+ * - Public read access for strategies, but writes require authentication.
+ * - Users can create or update their own VIP request document in `/vipRequests/{userId}`
+ *   if they are authenticated and the document ID matches their `request.auth.uid`.
+ * - Reading of VIP requests is restricted to the user who owns the document,
+ *   preventing users from seeing each other's requests.
  *
  * Denormalization for Authorization:
- * There is no need for denormalization because the authorization is based solely on
- * the user's authentication state, not on any data within the documents themselves.
+ * No denormalization is needed as authorization is based on authentication state and UID matching.
  *
  * Structural Segregation:
- * There is no segregation, as all strategies are stored in a single collection.
+ * - `/chineseStrategies`: For public strategy data.
+ * - `/vipRequests`: For private, user-specific VIP requests.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -28,27 +30,46 @@ service cloud.firestore {
     /**
      * @description Grants public read access to Chinese strategies, but restricts writes to authenticated users.
      * @path /chineseStrategies/{chineseStrategyId}
-     * @allow (get, list): Any user can read Chinese strategies.
-     * @allow (create): An authenticated user can create a new strategy.
-     * @allow (update, delete): An authenticated user can update or delete a strategy.
-     * @deny (create): An unauthenticated user cannot create a new strategy.
-     * @deny (update, delete): An unauthenticated user cannot update or delete a strategy.
-     * @principle Allows anyone to read, but requires authentication for write operations.
      */
     match /chineseStrategies/{chineseStrategyId} {
-      // Read permissions: public access.
-      allow get: if true;
-      allow list: if true;
-
-      // Write permissions: only authenticated users can create, update, and delete.
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow read: if true;
+      allow write: if isSignedIn();
     }
 
-    // Define helper functions.
+    /**
+     * @description Rules for VIP access requests.
+     * @path /vipRequests/{userId}
+     */
+    match /vipRequests/{userId} {
+      /**
+       * @allow (get): A user can read their own VIP request document.
+       * @allow (create, update): A user can create or update their own VIP request.
+       *   - The user must be signed in.
+       *   - The document ID must match the user's UID.
+       *   - The brokerId must be a string with at least 8 digits.
+       *   - The status can only be set to 'PENDING' by the user.
+       */
+      allow get: if isSignedIn() && isOwner(userId);
+      allow write: if isSignedIn() && isOwner(userId) && isValidVipRequest();
+    }
+
+    // Helper functions.
     function isSignedIn() {
       return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isValidVipRequest() {
+      // Ensure brokerId is a string of at least 8 digits.
+      let isBrokerIdValid = request.resource.data.brokerId is string &&
+                           request.resource.data.brokerId.matches("^[0-9]{8,}$");
+      // Users can only submit requests with a 'PENDING' status.
+      let isStatusValid = request.resource.data.status == 'PENDING';
+      
+      return isBrokerIdValid && isStatusValid;
     }
   }
 }

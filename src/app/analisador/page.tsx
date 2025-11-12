@@ -48,11 +48,10 @@ type AppState = 'idle' | 'loading' | 'result' | 'waiting';
 type AccessState = 'checking' | 'granted' | 'denied';
 
 type SignalUsage = {
-  count: number;
-  timestamp: number | null;
+  timestamps: number[];
 }
 
-const DAILY_SIGNAL_LIMIT = 3;
+const HOURLY_SIGNAL_LIMIT = 3;
 
 // Seeded pseudo-random number generator
 function seededRandom(seed: number) {
@@ -127,8 +126,9 @@ export default function AnalisadorPage() {
   const [signalData, setSignalData] = useState<SignalData | null>(null);
   const [showOTC, setShowOTC] = useState(false);
   const [isMarketOpen, setIsMarketOpen] = useState(true);
-  const [signalUsage, setSignalUsage] = useState<SignalUsage>({ count: 0, timestamp: null });
-  const [limitResetTime, setLimitResetTime] = useState<string>('');
+  const [signalUsage, setSignalUsage] = useState<SignalUsage>({ timestamps: [] });
+  const [hasReachedLimit, setHasReachedLimit] = useState(false);
+
 
   const [formData, setFormData] = useState<FormData>({
     asset: 'EUR/JPY',
@@ -173,36 +173,20 @@ export default function AnalisadorPage() {
     const usageString = localStorage.getItem('signalUsage');
     if (usageString) {
       const usage: SignalUsage = JSON.parse(usageString);
-      if (usage.timestamp && (Date.now() - usage.timestamp > 24 * 60 * 60 * 1000)) {
-        // 24 hours have passed, reset the limit
-        const newUsage = { count: 0, timestamp: null };
-        localStorage.setItem('signalUsage', JSON.stringify(newUsage));
-        setSignalUsage(newUsage);
+      const oneHourAgo = Date.now() - 60 * 60 * 1000;
+      
+      const recentTimestamps = usage.timestamps.filter(ts => ts > oneHourAgo);
+      
+      if (usage.timestamps.length !== recentTimestamps.length) {
+          const newUsage = { timestamps: recentTimestamps };
+          localStorage.setItem('signalUsage', JSON.stringify(newUsage));
+          setSignalUsage(newUsage);
       } else {
-        setSignalUsage(usage);
-        if(usage.count >= DAILY_SIGNAL_LIMIT && usage.timestamp) {
-            const resetDate = new Date(usage.timestamp + 24 * 60 * 60 * 1000);
-            const updateTimer = () => {
-                const now = new Date();
-                const diff = resetDate.getTime() - now.getTime();
-                if(diff <= 0) {
-                    setLimitResetTime('');
-                    // Recalculate usage
-                     const newUsage = { count: 0, timestamp: null };
-                     localStorage.setItem('signalUsage', JSON.stringify(newUsage));
-                     setSignalUsage(newUsage);
-                    return;
-                }
-                const hours = Math.floor(diff / (1000 * 60 * 60));
-                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-                setLimitResetTime(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
-            }
-            updateTimer();
-            const interval = setInterval(updateTimer, 1000);
-            return () => clearInterval(interval);
-        }
+          setSignalUsage(usage);
       }
+      
+      setHasReachedLimit(recentTimestamps.length >= HOURLY_SIGNAL_LIMIT);
+
     }
   }, [appState]);
 
@@ -269,13 +253,17 @@ export default function AnalisadorPage() {
   }, [appState, signalData?.operationStatus]);
   
  const handleAnalyze = async () => {
-    
-    // Check limit before proceeding
-    if (signalUsage.count >= DAILY_SIGNAL_LIMIT) {
-        // Optionally show a toast or alert
-        console.log("Daily limit reached");
+    const usageString = localStorage.getItem('signalUsage') || '{ "timestamps": [] }';
+    const currentUsage: SignalUsage = JSON.parse(usageString);
+    const oneHourAgo = Date.now() - 60 * 60 * 1000;
+    const recentTimestamps = currentUsage.timestamps.filter(ts => ts > oneHourAgo);
+
+    if (recentTimestamps.length >= HOURLY_SIGNAL_LIMIT) {
+        setHasReachedLimit(true);
+        // The SignalForm component will handle showing the modal
         return;
     }
+
 
     setAppState('loading');
     
@@ -296,11 +284,14 @@ export default function AnalisadorPage() {
     });
     
     // Update usage stats
-    const newCount = signalUsage.count + 1;
-    const newTimestamp = signalUsage.timestamp || Date.now();
-    const newUsage = { count: newCount, timestamp: newTimestamp };
+    const newTimestamps = [...recentTimestamps, Date.now()];
+    const newUsage = { timestamps: newTimestamps };
     localStorage.setItem('signalUsage', JSON.stringify(newUsage));
     setSignalUsage(newUsage);
+    if(newUsage.timestamps.length >= HOURLY_SIGNAL_LIMIT){
+        setHasReachedLimit(true);
+    }
+
 
     setAppState('result');
   };
@@ -346,10 +337,6 @@ export default function AnalisadorPage() {
     );
   }
 
-  const signalsLeft = DAILY_SIGNAL_LIMIT - signalUsage.count;
-  const hasReachedLimit = signalsLeft <= 0;
-
-
   // Main content for granted access
   return (
     <>
@@ -381,8 +368,6 @@ export default function AnalisadorPage() {
                 showOTC={showOTC}
                 setShowOTC={setShowOTC}
                 isMarketOpen={isMarketOpen}
-                signalsLeft={signalsLeft}
-                limitResetTime={limitResetTime}
                 hasReachedLimit={hasReachedLimit}
                 user={user}
                 firestore={useFirebase().firestore}
@@ -402,3 +387,5 @@ export default function AnalisadorPage() {
     </>
   );
 }
+
+    

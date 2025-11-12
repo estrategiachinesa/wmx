@@ -282,8 +282,8 @@ export function SignalForm({
             </Button>
             {!isVip && (
                 <Button variant="link" className="w-full flex-col h-auto text-purple-400 hover:text-purple-300" onClick={() => setVipModalOpen(true)}>
-                    <Crown className="h-5 w-5 mb-1" />
-                    Seja PREMIUM
+                    <Crown className="h-5 w-5" />
+                    PREMIUM
                 </Button>
             )}
         </div>

@@ -283,7 +283,7 @@ export function SignalForm({
             {!isVip && (
                 <Button variant="link" className="w-full text-primary" onClick={() => setVipModalOpen(true)}>
                     <Crown className="mr-2 h-4 w-4" />
-                    Seja VIP
+                    Seja PREMIUM
                 </Button>
             )}
         </div>

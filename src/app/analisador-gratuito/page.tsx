@@ -4,15 +4,13 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { SignalForm } from '@/components/app/signal-form';
 import { isMarketOpenForAsset } from '@/lib/market-hours';
 import type { Asset, FormData } from '@/app/analisador/page';
@@ -78,6 +76,7 @@ export default function AnalisadorGratuitoPage() {
               isVip={false}
               isVipModalOpen={false}
               setVipModalOpen={() => {}}
+              isFreeSignalPage={true}
             />
           </div>
         </main>
@@ -89,24 +88,24 @@ export default function AnalisadorGratuitoPage() {
         </footer>
       </div>
 
-      <AlertDialog open={showPopup} onOpenChange={setShowPopup}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Falha ao analisar ❌</AlertDialogTitle>
-            <AlertDialogDescription>
+      <Dialog open={showPopup} onOpenChange={setShowPopup}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Falha ao analisar ❌</DialogTitle>
+            <DialogDescription>
               Não encontramos seu cadastro no sistema. É preciso se cadastrar e realizar um depósito de qualquer valor para gerar os sinais.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <AlertDialogAction asChild>
-                <Link href="https://t.me/Trader_Chines" target="_blank">Baixar o indicador</Link>
-            </AlertDialogAction>
-            <AlertDialogAction asChild>
-              <Link href="https://affiliate.iqoption.net/redir/?aff=198544&aff_model=revenue&afftrack=" target="_blank">Cadastrar agora</Link>
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Button asChild>
+                <Link href="https://pay.hotmart.com/E101943327K" target="_blank">Adquirir uma Licença</Link>
+            </Button>
+            <Button asChild>
+              <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">Cadastrar agora</Link>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

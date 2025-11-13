@@ -9,7 +9,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { BarChart, Info, Loader2, Lock, Send, Timer, Crown } from 'lucide-react';
+import { BarChart, Info, Loader2, Lock, Send, Timer, Crown, Trophy } from 'lucide-react';
 import type { FormData, Asset } from '@/app/analisador/page';
 import { CurrencyFlags } from './currency-flags';
 import { Label } from '@/components/ui/label';
@@ -43,6 +43,7 @@ type SignalFormProps = {
   isVipModalOpen: boolean;
   setVipModalOpen: (isOpen: boolean) => void;
   rejectedBrokerId?: string;
+  isFreeSignalPage?: boolean;
 };
 
 const allAssets: Asset[] = [
@@ -67,6 +68,7 @@ export function SignalForm({
   isVipModalOpen,
   setVipModalOpen,
   rejectedBrokerId,
+  isFreeSignalPage = false,
 }: SignalFormProps) {
   const { toast } = useToast();
   const [brokerId, setBrokerId] = useState('');
@@ -573,10 +575,19 @@ export function SignalForm({
               {isLoading ? 'Analisando...' : !isMarketOpen ? 'Mercado Fechado' : hasReachedLimit ? 'Aguardando...' : 'Analisar Mercado'}
             </Button>
             {!isVip && (
+              isFreeSignalPage ? (
+                <Button variant="link" className="w-full flex-col h-auto text-yellow-400 hover:text-yellow-300" asChild>
+                  <Link href="https://pay.hotmart.com/E101943327K" target="_blank">
+                    <Trophy className="h-5 w-5 mb-0.5" />
+                    SEJA VIP
+                  </Link>
+                </Button>
+              ) : (
                 <Button variant="link" className="w-full flex-col h-auto text-purple-400 hover:text-purple-300" onClick={() => setVipModalOpen(true)}>
                     <Crown className="h-5 w-5 mb-0.5" />
                     PREMIUM
                 </Button>
+              )
             )}
         </div>
       </div>

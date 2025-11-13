@@ -162,9 +162,11 @@ export default function LoginPage() {
 
              <div className="text-center">
                 <p className="text-sm text-muted-foreground mb-2">Não tem uma conta? Cadastre-se</p>
-                <a onClick={(e) => { e.preventDefault(); (window as any).Hotmart.checkout.run({ producerToken: 'E101943327K', checkoutMode: '2' }); }} href="https://pay.hotmart.com/E101943327K?checkoutMode=2" className="hotmart-fb hotmart__button-checkout inline-block">
-                    <img src='https://static.hotmart.com/img/btn-buy-green.png' alt="Comprar agora" />
-                </a>
+                <Button variant="secondary" className="w-full" asChild>
+                    <Link href="https://pay.hotmart.com/E101943327K" target="_blank">
+                        Criar Conta
+                    </Link>
+                </Button>
             </div>
 
           </CardContent>

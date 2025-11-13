@@ -11,6 +11,7 @@
  * - `/appConfig/strategy`: Stores global app configuration for strategy parameters.
  * - `/chineseStrategies/{chineseStrategyId}`: Stores trading strategies.
  * - `/vipRequests/{userId}`: Stores VIP access requests.
+ * - `/users/{userId}/signalHistory/{signalId}`: Stores user-specific signal history.
  *
  * Key Security Decisions:
  * - Public read access for app configuration and strategies.
@@ -18,6 +19,7 @@
  * - Users can create or update their own VIP request document in `/vipRequests/{userId}`
  *   if they are authenticated and the document ID matches their `request.auth.uid`.
  * - Reading of VIP requests is restricted to the user who owns the document.
+ * - Users can read and write to their own signal history subcollection.
  *
  * Denormalization for Authorization:
  * No denormalization is needed as authorization is based on authentication state and UID matching.
@@ -26,6 +28,7 @@
  * - `/appConfig`: For public configuration data.
  * - `/chineseStrategies`: For public strategy data.
  * - `/vipRequests`: For private, user-specific VIP requests.
+ * - `/users/{userId}/signalHistory`: For private, user-specific historical data.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -93,6 +96,14 @@ service cloud.firestore {
       allow get: if isSignedIn() && isOwner(userId);
       allow write: if isSignedIn() && isOwner(userId) && isValidVipRequest(request, resource);
     }
+    
+    /**
+     * @description Rules for a user's signal history.
+     * @path /users/{userId}/signalHistory/{signalId}
+     */
+    match /users/{userId}/signalHistory/{signalId} {
+        allow read, write: if isSignedIn() && isOwner(userId);
+    }
 
     // Helper functions.
     function isSignedIn() {
@@ -127,3 +138,5 @@ service cloud.firestore {
     }
   }
 }
+
+    

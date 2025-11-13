@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -17,11 +18,12 @@ import {
 import { SignalForm } from '@/components/app/signal-form';
 import { SignalResult } from '@/components/app/signal-result';
 import { isMarketOpenForAsset } from '@/lib/market-hours';
-import { Loader2 } from 'lucide-react';
-import { useFirebase, useDoc, useMemoFirebase, useAppConfig } from '@/firebase';
+import { BookMarked, Loader2 } from 'lucide-react';
+import { useFirebase, useDoc, useMemoFirebase, useAppConfig, addDocumentNonBlocking } from '@/firebase';
 import { Button } from '@/components/ui/button';
-import { doc } from 'firebase/firestore';
+import { doc, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 export type Asset = 
   | 'EUR/USD' | 'EUR/USD (OTC)'
@@ -302,6 +304,14 @@ export default function AnalisadorPage() {
         });
         return;
     }
+    if (!user || !firestore) {
+      toast({
+            variant: 'destructive',
+            title: 'Erro de Autenticação',
+            description: 'Não foi possível identificar o usuário. Tente fazer login novamente.',
+        });
+        return;
+    }
     if (!isPremium && usageStorageKey) {
       const usageString = localStorage.getItem(usageStorageKey) || '{ "timestamps": [] }';
       const currentUsage: SignalUsage = JSON.parse(usageString);
@@ -315,7 +325,6 @@ export default function AnalisadorPage() {
       }
     }
 
-
     setAppState('loading');
     
     // Simulate network delay
@@ -324,8 +333,7 @@ export default function AnalisadorPage() {
     try {
       // Logic is now client-side but consistent
       const result = generateClientSideSignal(formData, config.correlationChance);
-      
-      setSignalData({
+      const newSignalData: SignalData = {
         ...formData,
         signal: result.signal,
         targetTime: result.targetTime,
@@ -334,6 +342,19 @@ export default function AnalisadorPage() {
         countdown: null,
         operationCountdown: null,
         operationStatus: 'pending'
+      };
+      
+      setSignalData(newSignalData);
+
+      // Save signal to history
+      const historyRef = collection(firestore, 'users', user.uid, 'signalHistory');
+      addDocumentNonBlocking(historyRef, {
+        asset: newSignalData.asset,
+        expirationTime: newSignalData.expirationTime,
+        signal: newSignalData.signal,
+        targetTime: newSignalData.targetTime,
+        status: 'pending', // 'win', 'loss', 'tie' can be set later
+        createdAt: new Date(),
       });
       
       if (!isPremium && usageStorageKey) {
@@ -413,15 +434,23 @@ export default function AnalisadorPage() {
 
       <div className="flex flex-col min-h-screen">
         <header className="p-4 flex justify-between items-center">
-          {isPremium ? (
-             <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
-              PREMIUM
-            </div>
-          ) : (
-             <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
-              VIP
-            </div>
-          )}
+          <div className='flex items-center gap-4'>
+            {isPremium ? (
+              <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
+                PREMIUM
+              </div>
+            ) : (
+              <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
+                VIP
+              </div>
+            )}
+             <Button variant="ghost" size="icon" asChild>
+                <Link href="/historico">
+                  <BookMarked className="h-5 w-5" />
+                  <span className="sr-only">Histórico</span>
+                </Link>
+            </Button>
+          </div>
            <button
             onClick={handleLogout}
             className="text-sm bg-destructive text-destructive-foreground hover:bg-destructive/90 px-3 py-1.5 rounded-md font-semibold"
@@ -472,3 +501,5 @@ export default function AnalisadorPage() {
     </>
   );
 }
+
+    

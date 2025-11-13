@@ -162,9 +162,9 @@ export default function LoginPage() {
 
              <div className="text-center">
                 <p className="text-sm text-muted-foreground">
-                  Não tem uma conta?{' '}
+                  Não tem uma licença?{' '}
                   <Link href="https://pay.hotmart.com/E101943327K" target="_blank" className="font-semibold text-primary underline-offset-4 hover:underline">
-                    Cadastre-se
+                    Clique aqui
                   </Link>
                 </p>
             </div>

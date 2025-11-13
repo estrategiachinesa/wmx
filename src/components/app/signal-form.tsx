@@ -448,7 +448,7 @@ export function SignalForm({
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setVipModalOpen(false)}>
-                Continuar na Fila
+                Continuar no VIP
               </Button>
             </DialogFooter>
           </>

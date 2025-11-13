@@ -161,12 +161,12 @@ export default function LoginPage() {
             </div>
 
              <div className="text-center">
-                <p className="text-sm text-muted-foreground mb-2">Não tem uma conta? Cadastre-se</p>
-                <Button variant="secondary" className="w-full" asChild>
-                    <Link href="https://pay.hotmart.com/E101943327K" target="_blank">
-                        Criar Conta
-                    </Link>
-                </Button>
+                <p className="text-sm text-muted-foreground">
+                  Não tem uma conta?{' '}
+                  <Link href="https://pay.hotmart.com/E101943327K" target="_blank" className="font-semibold text-primary underline-offset-4 hover:underline">
+                    Cadastre-se
+                  </Link>
+                </p>
             </div>
 
           </CardContent>

@@ -73,6 +73,8 @@ export function SignalForm({
   const [isSubmittingId, setIsSubmittingId] = useState(false);
   const [isConfirmingDeposit, setIsConfirmingDeposit] = useState(false);
   const [waitingMessage, setWaitingMessage] = useState('');
+  const [showDepositLinks, setShowDepositLinks] = useState(false);
+
 
   const assets = showOTC ? allAssets : allAssets.filter(a => !a.includes('(OTC)'));
 
@@ -126,6 +128,14 @@ export function SignalForm({
     }
     return () => clearInterval(interval);
   }, [hasReachedLimit, isVipModalOpen, vipStatus]);
+  
+  useEffect(() => {
+    // Reset showDepositLinks state when modal is closed or vipStatus changes
+    if (!isVipModalOpen || vipStatus !== 'AWAITING_DEPOSIT') {
+        setShowDepositLinks(false);
+    }
+  }, [isVipModalOpen, vipStatus]);
+
 
   const handleIdSubmit = async () => {
     if (!/^\d{8,}$/.test(brokerId)) {
@@ -274,18 +284,20 @@ export function SignalForm({
               </DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <Button className="w-full" asChild>
-                  <Link href="https://affiliate.iqoption.net/redir/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
-                    Acessar IQ Option
-                  </Link>
-                </Button>
-                 <Button className="w-full" asChild>
-                  <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
-                    Acessar Exnova
-                  </Link>
-                </Button>
-              </div>
+              {showDepositLinks && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-in fade-in">
+                  <Button className="w-full" asChild>
+                    <Link href="https://affiliate.iqoption.net/redir/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                      Acessar IQ Option
+                    </Link>
+                  </Button>
+                  <Button className="w-full" asChild>
+                    <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                      Acessar Exnova
+                    </Link>
+                  </Button>
+                </div>
+              )}
                <Alert className="text-center">
                   <Info className="h-4 w-4" />
                   <AlertDescription>
@@ -294,9 +306,15 @@ export function SignalForm({
                </Alert>
             </div>
              <DialogFooter className="grid grid-cols-2 gap-2">
-                <Button variant="outline" onClick={() => setVipModalOpen(false)} disabled={isConfirmingDeposit}>
-                    Vou depositar
-                </Button>
+                {!showDepositLinks ? (
+                    <Button variant="outline" onClick={() => setShowDepositLinks(true)} disabled={isConfirmingDeposit}>
+                        Vou depositar
+                    </Button>
+                ) : (
+                    <Button variant="outline" onClick={() => setVipModalOpen(false)} disabled={isConfirmingDeposit}>
+                        Fechar
+                    </Button>
+                )}
                 <Button onClick={handleConfirmDeposit} disabled={isConfirmingDeposit}>
                     {isConfirmingDeposit ? <Loader2 className="animate-spin"/> : "Já fiz o depósito"}
                 </Button>
@@ -571,5 +589,7 @@ export function SignalForm({
     </>
   );
 }
+
+    
 
     

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,7 +34,9 @@ export default function LoginPage() {
     setCredentials(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleLogin = async () => {
+  const handleLogin = useCallback(async () => {
+    if (isLoading) return;
+
     setIsLoading(true);
 
     if (!credentials.user || !credentials.password) {
@@ -70,7 +72,22 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoading, credentials, auth, toast]);
+  
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        handleLogin();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [handleLogin]);
   
   if (isUserLoading) {
       return (

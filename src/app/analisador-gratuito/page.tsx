@@ -1,45 +1,75 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { SignalForm } from '@/components/app/signal-form';
 import { isMarketOpenForAsset } from '@/lib/market-hours';
-import type { Asset, FormData } from '@/app/analisador/page';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import type { Asset, FormData, SignalData } from '@/app/analisador/page';
+import { FreeSignalResult } from '@/components/app/free-signal-result';
 
-// This is a new page for the free analyzer
 export default function AnalisadorGratuitoPage() {
   const router = useRouter();
-  const [showPopup, setShowPopup] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [appState, setAppState] = useState<'form' | 'loading' | 'result'>('form');
   const [formData, setFormData] = useState<FormData>({
     asset: 'EUR/JPY',
     expirationTime: '1m',
   });
   const [showOTC, setShowOTC] = useState(false);
   const isMarketOpen = isMarketOpenForAsset(formData.asset);
+  
+  // Seeded pseudo-random number generator to have some consistency
+  function seededRandom(seed: number) {
+    const x = Math.sin(seed) * 10000;
+    return x - Math.floor(x);
+  }
+
+  // This function generates a *fake* target time to show on the result page.
+  // The actual signal (CALL/PUT) is never generated or sent to the client.
+  const generateFakeSignalTime = (expirationTime: '1m' | '5m') => {
+      const now = new Date();
+      let targetTime: Date;
+
+      if (expirationTime === '1m') {
+          const nextMinute = new Date(now);
+          nextMinute.setSeconds(0, 0);
+          nextMinute.setMinutes(nextMinute.getMinutes() + 1);
+          targetTime = nextMinute;
+      } else { // 5 minutes
+          const minutes = now.getMinutes();
+          const remainder = minutes % 5;
+          const minutesToAdd = 5 - remainder;
+          targetTime = new Date(now.getTime());
+          targetTime.setMinutes(minutes + minutesToAdd, 0, 0);
+          if (targetTime.getTime() < now.getTime()) {
+              targetTime.setMinutes(targetTime.getMinutes() + 5);
+          }
+      }
+      
+      return {
+        targetTime: targetTime.toLocaleTimeString('en-US', {
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+        }),
+      };
+  }
 
   const handleAnalyze = async () => {
-    setIsSubmitting(true);
-    // Simulate loading
+    setAppState('loading');
     await new Promise(resolve => setTimeout(resolve, 1500));
-    setShowPopup(true);
-    setIsSubmitting(false);
+    setAppState('result');
   };
   
+  const handleReset = () => {
+    setAppState('form');
+  };
+
   const handleBackToHome = () => {
     router.push('/');
   }
+
+  const { targetTime } = generateFakeSignalTime(formData.expirationTime);
 
   return (
     <>
@@ -60,24 +90,40 @@ export default function AnalisadorGratuitoPage() {
         </header>
 
         <main className="flex-grow flex flex-col items-center justify-center p-4 space-y-6">
+          {appState === 'result' && (
+             <div className="text-center">
+                <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl font-headline">
+                    ESTRATÉGIA CHINESA
+                </h1>
+             </div>
+          )}
           <div className="w-full max-w-md bg-background/50 backdrop-blur-sm border border-border/50 rounded-xl shadow-2xl shadow-primary/10 p-8">
-            <SignalForm
-              formData={formData}
-              setFormData={setFormData}
-              onSubmit={handleAnalyze}
-              isLoading={isSubmitting}
-              showOTC={showOTC}
-              setShowOTC={setShowOTC}
-              isMarketOpen={isMarketOpen}
-              // These props are for the premium version, so we pass down dummy/default values
-              hasReachedLimit={false}
-              user={null}
-              firestore={undefined as any}
-              isVip={false}
-              isVipModalOpen={false}
-              setVipModalOpen={() => {}}
-              isFreeSignalPage={true}
-            />
+            {appState !== 'result' ? (
+              <SignalForm
+                formData={formData}
+                setFormData={setFormData}
+                onSubmit={handleAnalyze}
+                isLoading={appState === 'loading'}
+                showOTC={showOTC}
+                setShowOTC={setShowOTC}
+                isMarketOpen={isMarketOpen}
+                // These props are for the premium version, so we pass down dummy/default values
+                hasReachedLimit={false}
+                user={null}
+                firestore={undefined as any}
+                isVip={false}
+                isVipModalOpen={false}
+                setVipModalOpen={() => {}}
+                isFreeSignalPage={true}
+              />
+            ) : (
+              <FreeSignalResult
+                asset={formData.asset}
+                expirationTime={formData.expirationTime}
+                targetTime={targetTime}
+                onReset={handleReset}
+              />
+            )}
           </div>
         </main>
         
@@ -87,25 +133,6 @@ export default function AnalisadorGratuitoPage() {
           <p className="max-w-xl mx-auto">Aviso Legal: Todas as estratégias e investimentos envolvem risco de perda. Nenhuma informação contida neste produto deve ser interpretada como uma garantia de resultados.</p>
         </footer>
       </div>
-
-      <Dialog open={showPopup} onOpenChange={setShowPopup}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Falha ao analisar ❌</DialogTitle>
-            <DialogDescription>
-              Não encontramos seu cadastro no sistema. É preciso se cadastrar e realizar um depósito de qualquer valor para gerar os sinais.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <Button asChild>
-                <Link href="https://pay.hotmart.com/E101943327K" target="_blank">Adquirir uma Licença</Link>
-            </Button>
-            <Button asChild>
-              <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">Cadastrar agora</Link>
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }

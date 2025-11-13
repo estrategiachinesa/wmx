@@ -393,9 +393,13 @@ export default function AnalisadorPage() {
       <div className="fixed inset-0 -z-10 bg-gradient-to-br from-background via-background/80 to-background" />
 
       <div className="flex flex-col min-h-screen">
-        <header className="p-4 flex justify-end items-center">
-          {isPremium && (
-            <div className="absolute left-4 top-4 px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
+        <header className="p-4 flex justify-between items-center">
+          {isPremium ? (
+             <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
+              PREMIUM
+            </div>
+          ) : (
+             <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
               VIP
             </div>
           )}
@@ -445,7 +449,5 @@ export default function AnalisadorPage() {
     </>
   );
 }
-
-    
 
     

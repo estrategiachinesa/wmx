@@ -4,8 +4,7 @@ import { isMarketOpenForAsset } from '@/lib/market-hours';
 
 export type Asset = 
   | 'EUR/USD' | 'EUR/USD (OTC)'
-  | 'EUR/JPY' | 'EUR/JPY (OTC)'
-  | 'EUR/GBP' | 'EUR/GBP (OTC)';
+  | 'EUR/JPY' | 'EUR/JPY (OTC)';
 
 export type ExpirationTime = '1m' | '5m';
 

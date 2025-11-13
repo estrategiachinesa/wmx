@@ -18,12 +18,12 @@ const marketSchedules: Record<Asset, Schedule> = {
     6: [], // Saturday (closed)
   },
   'EUR/USD (OTC)': {
-    0: [{ start: 0, end: 24 }], // Sunday
-    1: [{ start: 0, end: 1 }, { start: 2, end: 24 }], // Monday
-    2: [{ start: 0, end: 24 }], // Tuesday
-    3: [{ start: 0, end: 1 }, { start: 2, end: 24 }], // Wednesday
-    4: [{ start: 0, end: 24 }], // Thursday
-    5: [{ start: 0, end: 1 }, { start: 2, end: 24 }], // Friday
+    0: [{ start: 0, end: 21 }], // Sunday
+    1: [{ start: 17, end: 21 }], // Monday
+    2: [{ start: 17, end: 21 }], // Tuesday
+    3: [{ start: 17, end: 21 }], // Wednesday
+    4: [{ start: 17, end: 21 }], // Thursday
+    5: [{ start: 15.5, end: 24 }], // Friday
     6: [{ start: 0, end: 24 }], // Saturday
   },
   'EUR/JPY': {
@@ -36,12 +36,12 @@ const marketSchedules: Record<Asset, Schedule> = {
     6: [], // Saturday (closed)
   },
   'EUR/JPY (OTC)': {
-    0: [{ start: 0, end: 24 }], // Sunday
-    1: [{ start: 0, end: 1 }, { start: 2, end: 24 }], // Monday
-    2: [{ start: 0, end: 24 }], // Tuesday
-    3: [{ start: 0, end: 1 }, { start: 2, end: 24 }], // Wednesday
-    4: [{ start: 0, end: 24 }], // Thursday
-    5: [{ start: 0, end: 1 }, { start: 2, end: 24 }], // Friday
+    0: [{ start: 0, end: 21 }], // Sunday
+    1: [{ start: 17, end: 21 }], // Monday
+    2: [{ start: 17, end: 21 }], // Tuesday
+    3: [{ start: 17, end: 21 }], // Wednesday
+    4: [{ start: 17, end: 21 }], // Thursday
+    5: [{ start: 15.5, end: 24 }], // Friday
     6: [{ start: 0, end: 24 }], // Saturday
   },
 };
@@ -70,5 +70,3 @@ export function isMarketOpenForAsset(asset: Asset): boolean {
 
   return false; // Current time is not in any open range
 }
-
-    

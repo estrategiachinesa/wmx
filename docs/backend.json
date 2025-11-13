@@ -142,7 +142,7 @@
   },
   "firestore": {
     "structure": [
-       {
+      {
         "path": "/appConfig/links",
         "definition": {
           "entityName": "LinkConfig",

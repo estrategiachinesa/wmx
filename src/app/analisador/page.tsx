@@ -130,8 +130,8 @@ export default function AnalisadorPage() {
   const [isMarketOpen, setIsMarketOpen] = useState(true);
   const [signalUsage, setSignalUsage] = useState<SignalUsage>({ timestamps: [] });
   const [hasReachedLimit, setHasReachedLimit] = useState(false);
-  const [isVip, setIsVip] = useState(false);
-  const [isVipModalOpen, setVipModalOpen] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+  const [isPremiumModalOpen, setPremiumModalOpen] = useState(false);
   const { toast } = useToast();
 
 
@@ -140,7 +140,7 @@ export default function AnalisadorPage() {
     return doc(firestore, 'vipRequests', user.uid);
   }, [firestore, user]);
 
-  const { data: vipData, isLoading: isVipLoading } = useDoc(vipRequestRef);
+  const { data: premiumData, isLoading: isPremiumLoading } = useDoc(vipRequestRef);
 
   const [formData, setFormData] = useState<FormData>({
     asset: 'EUR/JPY',
@@ -181,10 +181,10 @@ export default function AnalisadorPage() {
   }, [user, isUserLoading, auth]);
 
    useEffect(() => {
-    const isApproved = vipData && (vipData as any).status === 'APPROVED';
+    const isApproved = premiumData && (premiumData as any).status === 'APPROVED';
     
     if (isApproved) {
-      setIsVip(true);
+      setIsPremium(true);
       document.documentElement.classList.add('theme-premium');
 
       const hasSeenWelcome = localStorage.getItem('hasSeenPremiumWelcome');
@@ -196,17 +196,17 @@ export default function AnalisadorPage() {
         localStorage.setItem('hasSeenPremiumWelcome', 'true');
       }
     } else {
-      setIsVip(false);
+      setIsPremium(false);
       document.documentElement.classList.remove('theme-premium');
     }
      return () => {
       document.documentElement.classList.remove('theme-premium');
     };
-  }, [vipData, toast]);
+  }, [premiumData, toast]);
 
   // Effect for checking and updating signal usage limit
   useEffect(() => {
-    if (isVip) {
+    if (isPremium) {
       setHasReachedLimit(false);
       return;
     }
@@ -228,7 +228,7 @@ export default function AnalisadorPage() {
       setHasReachedLimit(recentTimestamps.length >= HOURLY_SIGNAL_LIMIT);
 
     }
-  }, [appState, isVip]);
+  }, [appState, isPremium]);
 
 
   useEffect(() => {
@@ -293,7 +293,7 @@ export default function AnalisadorPage() {
   }, [appState, signalData?.operationStatus]);
   
  const handleAnalyze = async () => {
-    if (!isVip) {
+    if (!isPremium) {
       const usageString = localStorage.getItem('signalUsage') || '{ "timestamps": [] }';
       const currentUsage: SignalUsage = JSON.parse(usageString);
       const oneHourAgo = Date.now() - 60 * 60 * 1000;
@@ -301,7 +301,7 @@ export default function AnalisadorPage() {
 
       if (recentTimestamps.length >= HOURLY_SIGNAL_LIMIT) {
           setHasReachedLimit(true);
-          setVipModalOpen(true);
+          setPremiumModalOpen(true);
           return;
       }
     }
@@ -325,7 +325,7 @@ export default function AnalisadorPage() {
       operationStatus: 'pending'
     });
     
-    if (!isVip) {
+    if (!isPremium) {
       // Update usage stats
       const usageString = localStorage.getItem('signalUsage') || '{ "timestamps": [] }';
       const currentUsage: SignalUsage = JSON.parse(usageString);
@@ -358,7 +358,7 @@ export default function AnalisadorPage() {
   }
 
   // Loading screen while checking user auth
-  if (accessState === 'checking' || isVipLoading) {
+  if (accessState === 'checking' || isPremiumLoading) {
       return (
           <div className="flex h-screen w-full items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin" />
@@ -394,9 +394,9 @@ export default function AnalisadorPage() {
 
       <div className="flex flex-col min-h-screen">
         <header className="p-4 flex justify-end items-center">
-          {isVip && (
+          {isPremium && (
             <div className="absolute left-4 top-4 px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
-              PREMIUM
+              VIP
             </div>
           )}
            <button onClick={handleLogout} className="text-sm text-foreground/70 hover:text-foreground">
@@ -425,10 +425,10 @@ export default function AnalisadorPage() {
                 hasReachedLimit={hasReachedLimit}
                 user={user}
                 firestore={useFirebase().firestore}
-                isVip={isVip}
-                vipStatus={(vipData as any)?.status}
-                isVipModalOpen={isVipModalOpen}
-                setVipModalOpen={setVipModalOpen}
+                isVip={isPremium}
+                vipStatus={(premiumData as any)?.status}
+                isVipModalOpen={isPremiumModalOpen}
+                setVipModalOpen={setPremiumModalOpen}
               />
              ) : (
               signalData && <SignalResult data={signalData} onReset={handleReset} />
@@ -445,5 +445,7 @@ export default function AnalisadorPage() {
     </>
   );
 }
+
+    
 
     

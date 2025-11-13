@@ -30,12 +30,15 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants public read access to app configuration, but restricts writes.
+     * @description Grants public read access to app configuration.
+     * @description Allows any user to create the document if it doesn't exist.
+     * @description Restricts updates to authenticated users.
      * @path /appConfig/links
      */
     match /appConfig/links {
       allow read: if true;
-      allow write: if isSignedIn();
+      allow create: if true;
+      allow update: if isSignedIn();
     }
 
     /**

@@ -53,7 +53,7 @@ export function OnlineServer({ isActivated, onToggle }: OnlineServerProps) {
         <span className="relative inline-flex rounded-full h-3 w-3 bg-green-600"></span>
       </span>
       <span className="text-xs font-semibold text-foreground/80">
-        {isActivated ? 'Market' : 'Online'}
+        Online
       </span>
     </button>
   );

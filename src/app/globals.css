@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -88,6 +89,14 @@ body {
     --accent: 260 85% 65%;
     --accent-foreground: 0 0% 98%;
     --ring: 260 85% 65%;
+  }
+
+  .theme-free {
+    --primary: 217 91% 60%; /* A nice blue color */
+    --primary-foreground: 0 0% 98%;
+    --accent: 217 91% 60%;
+    --accent-foreground: 0 0% 98%;
+    --ring: 217 91% 60%;
   }
 }
 

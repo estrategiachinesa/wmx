@@ -100,6 +100,7 @@ function generateClientSideSignal(input: { asset: Asset; expirationTime: Expirat
 
 
 const DAILY_LIMIT_KEY = 'daily_free_signal_timestamp';
+const MARKET_MODE_KEY = 'isMarketModeActive';
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 type FormData = {
@@ -124,6 +125,21 @@ export default function FreePage() {
   const [nextSignalCountdown, setNextSignalCountdown] = useState('');
 
   const isMarketOpen = isMarketOpenForAsset(formData.asset);
+
+  useEffect(() => {
+    const savedMarketMode = localStorage.getItem(MARKET_MODE_KEY);
+    if (savedMarketMode === 'true') {
+      setMarketModeActive(true);
+    }
+  }, []);
+
+  const handleToggleMarketMode = () => {
+    setMarketModeActive(prev => {
+        const newState = !prev;
+        localStorage.setItem(MARKET_MODE_KEY, String(newState));
+        return newState;
+    });
+  };
 
   const getPlaceholderTargetTime = () => {
     const now = new Date();
@@ -286,7 +302,7 @@ export default function FreePage() {
                 </div>
             </div>
             <div className="flex-1 flex justify-center">
-                 <OnlineServer isActivated={isMarketModeActive} onToggle={() => setMarketModeActive(!isMarketModeActive)} />
+                 <OnlineServer isActivated={isMarketModeActive} onToggle={handleToggleMarketMode} />
             </div>
           <div className="flex-1 flex justify-end">
             <button

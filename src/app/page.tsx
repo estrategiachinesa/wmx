@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { LineChart, Loader2, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { useFirebase } from '@/firebase';
+import { useFirebase, useAppConfig } from '@/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 
 const USER_DOMAIN = 'estrategiachinesa.app';
@@ -23,6 +23,7 @@ export default function LoginPage() {
   const [credentials, setCredentials] = useState({ user: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const { auth, isUserLoading, user } = useFirebase();
+  const { config, isConfigLoading } = useAppConfig();
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -90,7 +91,7 @@ export default function LoginPage() {
     };
   }, [handleLogin]);
   
-  if (isUserLoading) {
+  if (isUserLoading || isConfigLoading) {
       return (
           <div className="flex h-screen w-full items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin" />
@@ -166,7 +167,7 @@ export default function LoginPage() {
                 </Button>
               </div>
                <Button variant="link" size="sm" className="w-full text-blue-400 text-xs h-auto pt-2" asChild>
-                  <Link href="https://t.me/Trader_Chines" target="_blank">
+                  <Link href={config?.telegramUrl || '#'} target="_blank">
                     Problemas com o acesso? Fale conosco
                   </Link>
                 </Button>
@@ -186,7 +187,7 @@ export default function LoginPage() {
              <div className="text-center">
                 <p className="text-sm text-muted-foreground">
                   Não tem uma licença?{' '}
-                  <Link href="https://pay.hotmart.com/E101943327K" target="_blank" className="font-semibold text-primary underline-offset-4 hover:underline">
+                  <Link href={config?.hotmartUrl || '#'} target="_blank" className="font-semibold text-primary underline-offset-4 hover:underline">
                     Clique aqui
                   </Link>
                 </p>

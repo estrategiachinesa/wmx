@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { OnlineServer } from '@/components/app/OnlineServer';
 import { Asset, ExpirationTime } from '@/app/analisador/page';
+import { useAppConfig } from '@/firebase';
 
 export type SignalData = {
   asset: Asset;
@@ -110,6 +111,7 @@ type FormData = {
 
 export default function FreePage() {
   const router = useRouter();
+  const { config } = useAppConfig();
   const [appState, setAppState] = useState<'form' | 'loading' | 'result'>('form');
   const [signalData, setSignalData] = useState<SignalData | null>(null);
   const [formData, setFormData] = useState<FormData>({
@@ -127,6 +129,7 @@ export default function FreePage() {
   const isMarketOpen = isMarketOpenForAsset(formData.asset);
 
   useEffect(() => {
+    // This effect runs only on the client
     const savedMarketMode = localStorage.getItem(MARKET_MODE_KEY);
     if (savedMarketMode === 'true') {
       setMarketModeActive(true);
@@ -136,6 +139,7 @@ export default function FreePage() {
   const handleToggleMarketMode = () => {
     setMarketModeActive(prev => {
         const newState = !prev;
+        // This will only run on the client, where localStorage is available
         localStorage.setItem(MARKET_MODE_KEY, String(newState));
         return newState;
     });
@@ -370,12 +374,12 @@ export default function FreePage() {
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-col sm:space-x-0 gap-2">
               <Button asChild>
-                <Link href="https://pay.hotmart.com/E101943327K" target="_blank">
+                <Link href={config?.hotmartUrl || '#'} target="_blank">
                   Adquirir uma Licença
                 </Link>
               </Button>
               <Button asChild>
-                <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                <Link href={config?.exnovaUrl || '#'} target="_blank">
                   Cadastrar agora
                 </Link>
               </Button>
@@ -394,7 +398,7 @@ export default function FreePage() {
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-col sm:space-x-0 gap-2 pt-4">
               <Button asChild onClick={() => setWelcomeModalOpen(false)}>
-                <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                <Link href={config?.exnovaUrl || '#'} target="_blank">
                   Abrir a Corretora
                 </Link>
               </Button>
@@ -434,7 +438,7 @@ export default function FreePage() {
                 Fechar
             </Button>
             <Button asChild>
-                <Link href="https://pay.hotmart.com/E101943327K" target="_blank">
+                <Link href={config?.hotmartUrl || '#'} target="_blank">
                     Quero o Indicador
                 </Link>
             </Button>
@@ -444,5 +448,3 @@ export default function FreePage() {
     </>
   );
 }
-
-    

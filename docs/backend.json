@@ -1,6 +1,40 @@
 
 {
   "entities": {
+    "AppConfig": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "AppConfig",
+      "type": "object",
+      "description": "Stores global application configuration, such as affiliate links.",
+      "properties": {
+        "hotmartUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The affiliate link for the Hotmart product."
+        },
+        "exnovaUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The affiliate link for the Exnova broker."
+        },
+        "iqOptionUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The affiliate link for the IQ Option broker."
+        },
+        "telegramUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "The link to the support group on Telegram."
+        }
+      },
+      "required": [
+        "hotmartUrl",
+        "exnovaUrl",
+        "iqOptionUrl",
+        "telegramUrl"
+      ]
+    },
     "ChineseStrategy": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ChineseStrategy",
@@ -95,6 +129,16 @@
   },
   "firestore": {
     "structure": [
+       {
+        "path": "/appConfig/links",
+        "definition": {
+          "entityName": "AppConfig",
+          "schema": {
+            "$ref": "#/backend/entities/AppConfig"
+          },
+          "description": "Stores global application configuration, such as affiliate links. This is a single document."
+        }
+      },
       {
         "path": "/chineseStrategies/{chineseStrategyId}",
         "definition": {
@@ -128,6 +172,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to store Chinese trading strategies and VIP access requests. The design prioritizes simplicity. All Chinese Strategy documents are stored in a single collection, `/chineseStrategies`. VIP requests are stored in `/vipRequests`, with the document ID being the user's UID to ensure each user can only have one request, simplifying management and validation. This supports secure operations as rules can be applied based on user authentication state and document ownership."
+    "reasoning": "The Firestore structure is designed to store Chinese trading strategies and VIP access requests. The design prioritizes simplicity. All Chinese Strategy documents are stored in a single collection, `/chineseStrategies`. VIP requests are stored in `/vipRequests`, with the document ID being the user's UID to ensure each user can only have one request, simplifying management and validation. A new `/appConfig/links` document has been added to store global configuration like affiliate links, allowing them to be updated dynamically without code changes. This supports secure operations as rules can be applied based on user authentication state and document ownership."
   }
 }

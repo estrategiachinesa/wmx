@@ -23,6 +23,7 @@ import { User } from 'firebase/auth';
 import { doc, setDoc, serverTimestamp, Firestore } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Asset, ExpirationTime } from '@/app/analisador/page';
+import { useAppConfig } from '@/firebase';
 
 
 type VipStatus = 'PENDING' | 'AWAITING_DEPOSIT' | 'DEPOSIT_PENDING' | 'APPROVED' | 'REJECTED';
@@ -76,6 +77,7 @@ export function SignalForm({
   isFreeSignalPage = false,
 }: SignalFormProps) {
   const { toast } = useToast();
+  const { config } = useAppConfig();
   const [brokerId, setBrokerId] = useState('');
   const [isSubmittingId, setIsSubmittingId] = useState(false);
   const [isConfirmingDeposit, setIsConfirmingDeposit] = useState(false);
@@ -238,6 +240,15 @@ export function SignalForm({
   const buttonDisabled = isLoading || !isMarketOpen || (hasReachedLimit && !waitingMessage);
 
   const getPremiumModalContent = () => {
+    if (!config) {
+        return (
+             <div className="py-4 text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+              <p className="mt-2 text-sm text-muted-foreground">Carregando configuração...</p>
+            </div>
+        )
+    }
+
     switch (vipStatus) {
       case 'APPROVED':
         return (
@@ -294,12 +305,12 @@ export function SignalForm({
               {showDepositLinks && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-in fade-in">
                   <Button className="w-full" asChild>
-                    <Link href="https://affiliate.iqoption.net/redir/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                    <Link href={config.iqOptionUrl} target="_blank">
                       Acessar IQ Option
                     </Link>
                   </Button>
                   <Button className="w-full" asChild>
-                    <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                    <Link href={config.exnovaUrl} target="_blank">
                       Acessar Exnova
                     </Link>
                   </Button>
@@ -368,12 +379,12 @@ export function SignalForm({
                 <h3 className="font-bold mb-2">PASSO 1: Cadastre-se (Novamente)</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <Button className="w-full" asChild>
-                    <Link href="https://affiliate.iqoption.net/redir/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                    <Link href={config.iqOptionUrl} target="_blank">
                       Cadastrar na IQ Option
                     </Link>
                   </Button>
                    <Button className="w-full" asChild>
-                    <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                    <Link href={config.exnovaUrl} target="_blank">
                       Cadastrar na Exnova
                     </Link>
                   </Button>
@@ -421,12 +432,12 @@ export function SignalForm({
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <Button className="w-full" asChild>
-                    <Link href="https://affiliate.iqoption.net/redir/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                    <Link href={config.iqOptionUrl} target="_blank">
                       Cadastrar na IQ Option
                     </Link>
                   </Button>
                    <Button className="w-full" asChild>
-                    <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                    <Link href={config.exnovaUrl} target="_blank">
                       Cadastrar na Exnova
                     </Link>
                   </Button>
@@ -525,16 +536,16 @@ export function SignalForm({
                 ))}
               </SelectContent>
             </Select>
-            {showOTC && (
+            {showOTC && config && (
               <Alert className="mt-4 border-primary/20 bg-primary/10">
                 <Info className="h-4 w-4 text-primary" />
                 <AlertDescription className="text-xs text-primary/80">
                   Sinais OTC são para as corretoras
-                  <Link href="https://affiliate.iqoption.net/redir/?aff=198544&aff_model=revenue&afftrack=" target="_blank" className="font-bold underline hover:text-primary mx-1">
+                  <Link href={config.iqOptionUrl} target="_blank" className="font-bold underline hover:text-primary mx-1">
                     IQ Option
                   </Link>
                   e
-                  <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank" className="font-bold underline hover:text-primary ml-1">
+                  <Link href={config.exnovaUrl} target="_blank" className="font-bold underline hover:text-primary ml-1">
                     Exnova
                   </Link>
                   .
@@ -582,7 +593,7 @@ export function SignalForm({
             {!isVip && (
               isFreeSignalPage ? (
                 <Button variant="link" className="w-full flex-col h-auto text-yellow-400 hover:text-yellow-300" asChild>
-                  <Link href="https://pay.hotmart.com/E101943327K" target="_blank">
+                  <Link href={config?.hotmartUrl || '#'} target="_blank">
                     <Trophy className="h-5 w-5 mb-0.5" />
                     SEJA VIP
                   </Link>
@@ -605,5 +616,3 @@ export function SignalForm({
     </>
   );
 }
-
-    

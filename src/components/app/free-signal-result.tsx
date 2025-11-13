@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { SignalData } from '@/app/free/page';
 import { cn } from '@/lib/utils';
 import { Asset } from '@/app/analisador/page';
+import { useAppConfig } from '@/firebase';
 
 type FreeSignalResultProps = {
   data: SignalData;
@@ -52,6 +53,7 @@ const renderStatus = (data: SignalData) => {
 
 export function FreeSignalResult({ data, onReset, isMarketMode, isSignalFinished }: FreeSignalResultProps) {
   const { asset, expirationTime, targetTime, signal } = data;
+  const { config } = useAppConfig();
   const isCall = signal?.includes('CALL');
 
   const actionContent = () => {
@@ -79,12 +81,12 @@ export function FreeSignalResult({ data, onReset, isMarketMode, isSignalFinished
         <div className="pt-4 space-y-2">
           <p className="text-sm text-primary font-semibold">Revele este sinal e tenha acesso ILIMITADO!</p>
           <Button asChild className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold hover:to-yellow-600 shadow-lg">
-            <Link href="https://pay.hotmart.com/E101943327K" target="_blank">
+            <Link href={config?.hotmartUrl || '#'} target="_blank">
               Adquirir Licença VIP
             </Link>
           </Button>
           <Button asChild variant="outline" className="w-full">
-            <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+            <Link href={config?.exnovaUrl || '#'} target="_blank">
               Revelar Sinal Grátis (Via Cadastro)
             </Link>
           </Button>
@@ -146,5 +148,3 @@ export function FreeSignalResult({ data, onReset, isMarketMode, isSignalFinished
     </div>
   );
 }
-
-    

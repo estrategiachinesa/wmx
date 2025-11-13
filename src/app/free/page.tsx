@@ -187,7 +187,7 @@ export default function FreePage() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-col sm:space-x-0 gap-2 pt-4">
-              <Button asChild>
+              <Button asChild onClick={() => setWelcomeModalOpen(false)}>
                 <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
                   Abrir a Corretora
                 </Link>

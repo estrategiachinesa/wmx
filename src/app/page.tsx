@@ -156,7 +156,7 @@ export default function LoginPage() {
             </div>
             <div className="space-y-2 pt-2">
               <div className="grid grid-cols-2 gap-2">
-                <Button onClick={() => router.push('/analisador-gratuito')} variant="outline">
+                <Button onClick={() => router.push('/free')} variant="outline">
                     Sinal Grátis
                 </Button>
                 <Button onClick={handleLogin} disabled={isLoading} className="bg-primary/90 hover:bg-primary text-primary-foreground font-bold">

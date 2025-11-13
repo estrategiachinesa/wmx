@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 // This is a new layout file for the free analyzer page
-export default function AnalisadorGratuitoLayout({
+export default function FreeLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

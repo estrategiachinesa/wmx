@@ -18,7 +18,7 @@ import {
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
-export default function AnalisadorGratuitoPage() {
+export default function FreePage() {
   const router = useRouter();
   const [appState, setAppState] = useState<'form' | 'loading' | 'result'>('form');
   const [formData, setFormData] = useState<FormData>({

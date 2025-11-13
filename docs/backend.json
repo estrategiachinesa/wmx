@@ -68,6 +68,7 @@
           "enum": [
             "PENDING",
             "AWAITING_DEPOSIT",
+            "DEPOSIT_PENDING",
             "APPROVED",
             "REJECTED"
           ]

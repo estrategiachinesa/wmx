@@ -25,7 +25,7 @@ import { doc, setDoc, serverTimestamp, Firestore } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 
-type VipStatus = 'PENDING' | 'AWAITING_DEPOSIT' | 'APPROVED' | 'REJECTED';
+type VipStatus = 'PENDING' | 'AWAITING_DEPOSIT' | 'DEPOSIT_PENDING' | 'APPROVED' | 'REJECTED';
 
 type SignalFormProps = {
   formData: FormData;
@@ -71,6 +71,7 @@ export function SignalForm({
   const { toast } = useToast();
   const [brokerId, setBrokerId] = useState('');
   const [isSubmittingId, setIsSubmittingId] = useState(false);
+  const [isConfirmingDeposit, setIsConfirmingDeposit] = useState(false);
   const [waitingMessage, setWaitingMessage] = useState('');
 
   const assets = showOTC ? allAssets : allAssets.filter(a => !a.includes('(OTC)'));
@@ -113,6 +114,8 @@ export function SignalForm({
             setWaitingMessage('Seu acesso PREMIUM está em análise. Enquanto isso, aguarde na fila.');
         } else if (vipStatus === 'AWAITING_DEPOSIT') {
             setWaitingMessage('Cadastro verificado! Aguardando depósito para liberar seu acesso PREMIUM.');
+        } else if (vipStatus === 'DEPOSIT_PENDING') {
+            setWaitingMessage('Confirmação de depósito em análise. Em breve seu acesso PREMIUM será liberado.');
         } else {
             setWaitingMessage(`Estamos na fila, aguardando o melhor momento... (Posição: #${queuePosition})`);
             interval = setInterval(updateMessage, 8000);
@@ -185,6 +188,36 @@ export function SignalForm({
     }
   };
 
+  const handleConfirmDeposit = async () => {
+     if (!user || !firestore) {
+      toast({
+        variant: 'destructive',
+        title: 'Erro',
+        description: 'Usuário não autenticado.',
+      });
+      return;
+    }
+    setIsConfirmingDeposit(true);
+     try {
+      const vipRequestRef = doc(firestore, 'vipRequests', user.uid);
+      await setDoc(vipRequestRef, { status: 'DEPOSIT_PENDING' }, { merge: true });
+      toast({
+        title: 'Confirmação Recebida!',
+        description: 'Estamos verificando seu depósito. Seu acesso PREMIUM será liberado em breve.',
+      });
+      setVipModalOpen(false);
+    } catch (error) {
+       console.error("Error confirming deposit:", error);
+       toast({
+        variant: 'destructive',
+        title: 'Erro na Confirmação',
+        description: 'Não foi possível confirmar seu depósito. Tente novamente.',
+      });
+    } finally {
+      setIsConfirmingDeposit(false);
+    }
+  }
+
   const buttonDisabled = isLoading || !isMarketOpen || (hasReachedLimit && !waitingMessage);
 
   const getPremiumModalContent = () => {
@@ -237,13 +270,10 @@ export function SignalForm({
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline text-primary">🎉 Cadastro Verificado!</DialogTitle>
               <DialogDescription>
-                Falta apenas um passo! Faça seu primeiro depósito na corretora para ativar seu Acesso PREMIUM ilimitado.
+                Falta apenas um passo! Faça seu primeiro depósito na corretora para ativar seu Acesso PREMIUM.
               </DialogDescription>
             </DialogHeader>
-            <div className="py-4">
-              <p className="text-center text-sm text-muted-foreground mb-4">
-                Use os mesmos links abaixo para acessar sua conta e realizar o depósito.
-              </p>
+            <div className="py-4 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Button className="w-full" asChild>
                   <Link href="https://affiliate.iqoption.net/redir/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
@@ -256,10 +286,39 @@ export function SignalForm({
                   </Link>
                 </Button>
               </div>
+               <Alert className="text-center">
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    Após depositar, volte aqui e clique em "Já fiz o depósito" para a verificação final.
+                  </AlertDescription>
+               </Alert>
             </div>
-             <DialogFooter>
+             <DialogFooter className="grid grid-cols-2 gap-2">
+                <Button variant="outline" onClick={() => setVipModalOpen(false)} disabled={isConfirmingDeposit}>
+                    Vou depositar
+                </Button>
+                <Button onClick={handleConfirmDeposit} disabled={isConfirmingDeposit}>
+                    {isConfirmingDeposit ? <Loader2 className="animate-spin"/> : "Já fiz o depósito"}
+                </Button>
+            </DialogFooter>
+          </>
+        );
+       case 'DEPOSIT_PENDING':
+        return (
+           <>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline text-primary">Verificação Final</DialogTitle>
+              <DialogDescription>
+                Recebemos a confirmação do seu depósito. Estamos fazendo a última verificação e seu acesso será liberado em breve.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+              <p className="mt-2 text-sm text-muted-foreground">Analisando confirmação do depósito...</p>
+            </div>
+            <DialogFooter>
               <Button variant="outline" onClick={() => setVipModalOpen(false)}>
-                Continuar na Fila
+                Entendido
               </Button>
             </DialogFooter>
           </>

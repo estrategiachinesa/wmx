@@ -25,6 +25,8 @@ import { doc, setDoc, serverTimestamp, Firestore } from 'firebase/firestore';
 import { setDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 
+type VipStatus = 'PENDING' | 'AWAITING_DEPOSIT' | 'APPROVED' | 'REJECTED';
+
 type SignalFormProps = {
   formData: FormData;
   setFormData: (data: FormData) => void;
@@ -37,7 +39,7 @@ type SignalFormProps = {
   user: User | null;
   firestore: Firestore;
   isVip: boolean;
-  vipStatus?: 'PENDING' | 'APPROVED' | 'REJECTED';
+  vipStatus?: VipStatus;
   isVipModalOpen: boolean;
   setVipModalOpen: (isOpen: boolean) => void;
 };
@@ -72,8 +74,8 @@ export function SignalForm({
   const assets = showOTC ? allAssets : allAssets.filter(a => !a.includes('(OTC)'));
 
   useEffect(() => {
-    // Open the modal if the limit is reached, the user is not vip, and their status is not pending.
-    if (hasReachedLimit && !isVip && vipStatus !== 'PENDING') {
+    // Open the modal if the limit is reached, the user is not vip
+    if (hasReachedLimit && !isVip) {
       setVipModalOpen(true);
     }
   }, [hasReachedLimit, isVip, vipStatus, setVipModalOpen]);
@@ -98,9 +100,10 @@ export function SignalForm({
             setWaitingMessage(`Estamos na fila, aguardando o melhor momento... (Posição: #${queuePosition})`);
         };
         
-        // Show a specific message if their request is pending
-        if(vipStatus === 'PENDING') {
+        if (vipStatus === 'PENDING') {
             setWaitingMessage('Seu acesso PREMIUM está em análise. Enquanto isso, aguarde na fila.');
+        } else if (vipStatus === 'AWAITING_DEPOSIT') {
+            setWaitingMessage('Cadastro verificado! Aguardando depósito para liberar seu acesso PREMIUM.');
         } else {
             setWaitingMessage(`Estamos na fila, aguardando o melhor momento... (Posição: #${queuePosition})`);
             interval = setInterval(updateMessage, 8000);
@@ -164,6 +167,121 @@ export function SignalForm({
   };
 
   const buttonDisabled = isLoading || !isMarketOpen || (hasReachedLimit && !waitingMessage);
+
+  const getPremiumModalContent = () => {
+    switch (vipStatus) {
+      case 'PENDING':
+        return (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline text-primary">Análise em Andamento</DialogTitle>
+              <DialogDescription>
+                Seu cadastro foi recebido. Estamos verificando suas informações e seu acesso será liberado em breve.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+              <p className="mt-2 text-sm text-muted-foreground">Verificando seu cadastro na corretora...</p>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setVipModalOpen(false)}>
+                Entendido
+              </Button>
+            </DialogFooter>
+          </>
+        );
+      case 'AWAITING_DEPOSIT':
+        return (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline text-primary">🎉 Cadastro Verificado!</DialogTitle>
+              <DialogDescription>
+                Falta apenas um passo! Faça seu primeiro depósito na corretora para ativar seu Acesso PREMIUM ilimitado.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              <p className="text-center text-sm text-muted-foreground mb-4">
+                Use os mesmos links abaixo para acessar sua conta e realizar o depósito.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <Button className="w-full" asChild>
+                  <Link href="https://affiliate.iqoption.net/redir/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                    Acessar IQ Option
+                  </Link>
+                </Button>
+                 <Button className="w-full" asChild>
+                  <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                    Acessar Exnova
+                  </Link>
+                </Button>
+              </div>
+            </div>
+             <DialogFooter>
+              <Button variant="outline" onClick={() => setVipModalOpen(false)}>
+                Continuar na Fila
+              </Button>
+            </DialogFooter>
+          </>
+        );
+      default: // No status, or REJECTED
+        return (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-headline text-primary">Acesso PREMIUM Ilimitado</DialogTitle>
+              <DialogDescription>
+                Nossos servidores estão ocupados para garantir a melhor análise. Obtenha acesso prioritário e ilimitado com o Acesso PREMIUM.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="p-4 bg-secondary/50 rounded-lg">
+                <h3 className="font-bold mb-2">PASSO 1: Cadastre-se na Corretora</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Use um dos nossos links para garantir seu acesso. Deposite o valor mínimo para ativar sua conta.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <Button className="w-full" asChild>
+                    <Link href="https://affiliate.iqoption.net/redir/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                      Cadastrar na IQ Option
+                    </Link>
+                  </Button>
+                   <Button className="w-full" asChild>
+                    <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
+                      Cadastrar na Exnova
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+              <div className="p-4 bg-secondary/50 rounded-lg">
+                <h3 className="font-bold mb-2">PASSO 2: Valide seu Acesso</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Após o cadastro, insira o ID da sua conta da corretora abaixo para verificarmos seu cadastro.
+                </p>
+                <div className="flex w-full items-center space-x-2">
+                  <Input
+                    type="text"
+                    placeholder="ID da Corretora (mín. 8 dígitos)"
+                    value={brokerId}
+                    onChange={(e) => setBrokerId(e.target.value.replace(/\D/g, ''))}
+                    pattern="[0-9]*"
+                    minLength={8}
+                    disabled={isSubmittingId}
+                  />
+                  <Button type="submit" size="icon" onClick={handleIdSubmit} disabled={isSubmittingId || brokerId.length < 8}>
+                    {isSubmittingId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setVipModalOpen(false)}>
+                Continuar na Fila
+              </Button>
+            </DialogFooter>
+          </>
+        );
+    }
+  }
+
 
   return (
     <>
@@ -291,61 +409,9 @@ export function SignalForm({
 
       <Dialog open={isVipModalOpen} onOpenChange={setVipModalOpen}>
         <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-headline text-primary">Acesso PREMIUM Ilimitado</DialogTitle>
-            <DialogDescription>
-              Nossos servidores estão ocupados para garantir a melhor análise. Obtenha acesso prioritário e ilimitado com o Acesso PREMIUM.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="p-4 bg-secondary/50 rounded-lg">
-              <h3 className="font-bold mb-2">PASSO 1: Cadastre-se na Corretora</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Use um dos nossos links para garantir seu acesso. Deposite o valor mínimo para ativar sua conta.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <Button className="w-full" asChild>
-                  <Link href="https://affiliate.iqoption.net/redir/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
-                    Cadastrar na IQ Option
-                  </Link>
-                </Button>
-                 <Button className="w-full" asChild>
-                  <Link href="https://exnova.com/lp/start-trading/?aff=198544&aff_model=revenue&afftrack=" target="_blank">
-                    Cadastrar na Exnova
-                  </Link>
-                </Button>
-              </div>
-            </div>
-            <div className="p-4 bg-secondary/50 rounded-lg">
-              <h3 className="font-bold mb-2">PASSO 2: Valide seu Acesso</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Após o cadastro e depósito, insira o ID da sua conta da corretora abaixo para solicitar a liberação.
-              </p>
-              <div className="flex w-full items-center space-x-2">
-                <Input
-                  type="text"
-                  placeholder="ID da Corretora (mín. 8 dígitos)"
-                  value={brokerId}
-                  onChange={(e) => setBrokerId(e.target.value.replace(/\D/g, ''))}
-                  pattern="[0-9]*"
-                  minLength={8}
-                  disabled={isSubmittingId}
-                />
-                <Button type="submit" size="icon" onClick={handleIdSubmit} disabled={isSubmittingId || brokerId.length < 8}>
-                  {isSubmittingId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                </Button>
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setVipModalOpen(false)}>
-              Continuar na Fila
-            </Button>
-          </DialogFooter>
+          {getPremiumModalContent()}
         </DialogContent>
       </Dialog>
     </>
   );
 }
-
-    

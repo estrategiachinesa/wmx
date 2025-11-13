@@ -67,6 +67,7 @@
           "description": "The current status of the VIP request.",
           "enum": [
             "PENDING",
+            "AWAITING_DEPOSIT",
             "APPROVED",
             "REJECTED"
           ]

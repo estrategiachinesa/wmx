@@ -101,11 +101,6 @@ export default function LoginPage() {
             </div>
             <CardTitle className="font-headline text-3xl">Estratégia Chinesa</CardTitle>
             <CardDescription>Acesse com suas credenciais</CardDescription>
-             <Button variant="link" size="sm" className="w-full text-blue-400" asChild>
-                <Link href="https://t.me/Trader_Chines" target="_blank">
-                  Problemas com o acesso? Fale conosco
-                </Link>
-              </Button>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -142,10 +137,17 @@ export default function LoginPage() {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </div>
-            <Button onClick={handleLogin} disabled={isLoading} className="w-full bg-primary/90 hover:bg-primary text-primary-foreground font-bold">
-              {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Entrar
-            </Button>
+            <div className="space-y-2 pt-2">
+              <Button onClick={handleLogin} disabled={isLoading} className="w-full bg-primary/90 hover:bg-primary text-primary-foreground font-bold">
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Entrar
+              </Button>
+               <Button variant="link" size="sm" className="w-full text-blue-400 text-xs h-auto pt-2" asChild>
+                  <Link href="https://t.me/Trader_Chines" target="_blank">
+                    Problemas com o acesso? Fale conosco
+                  </Link>
+                </Button>
+            </div>
           </CardContent>
         </Card>
         <footer className="w-full text-center text-[0.6rem] text-foreground/50 p-4 mt-8">

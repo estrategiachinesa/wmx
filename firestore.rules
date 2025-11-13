@@ -43,11 +43,12 @@ service cloud.firestore {
     match /vipRequests/{userId} {
       /**
        * @allow (get): A user can read their own VIP request document.
-       * @allow (create, update): A user can create or update their own VIP request.
+       * @allow (write): A user can create or update their own VIP request.
        *   - The user must be signed in.
        *   - The document ID must match the user's UID.
        *   - The brokerId must be a string with at least 8 digits.
-       *   - The status can only be set to 'PENDING' by the user.
+       *   - The status can only be set to 'PENDING' by the user on create.
+       *   - The status can be set to 'DEPOSIT_PENDING' on update.
        */
       allow get: if isSignedIn() && isOwner(userId);
       allow write: if isSignedIn() && isOwner(userId) && isValidVipRequest();
@@ -63,13 +64,19 @@ service cloud.firestore {
     }
 
     function isValidVipRequest() {
-      // Ensure brokerId is a string of at least 8 digits.
+      // Ensure brokerId is a string of at least 8 digits when creating.
       let isBrokerIdValid = request.resource.data.brokerId is string &&
                            request.resource.data.brokerId.matches("^[0-9]{8,}$");
-      // Users can only submit requests with a 'PENDING' status.
-      let isStatusValid = request.resource.data.status == 'PENDING';
       
-      return isBrokerIdValid && isStatusValid;
+      // On create, user must set status to PENDING
+      let isCreating = request.method == 'create' && request.resource.data.status == 'PENDING';
+      
+      // On update, user can only change status to DEPOSIT_PENDING
+      let isUpdating = request.method == 'update' && 
+                       request.resource.data.status == 'DEPOSIT_PENDING' &&
+                       resource.data.status == 'AWAITING_DEPOSIT';
+
+      return isBrokerIdValid && (isCreating || isUpdating);
     }
   }
 }

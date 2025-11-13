@@ -401,9 +401,9 @@ export function SignalForm({
         return (
           <>
             <DialogHeader>
-              <DialogTitle className="text-2xl font-headline text-primary">Acesso PREMIUM Ilimitado</DialogTitle>
+              <DialogTitle className="text-2xl font-headline text-primary">Conheça o Plano Premium</DialogTitle>
               <DialogDescription>
-                Nossos servidores estão ocupados para garantir a melhor análise. Obtenha acesso prioritário e ilimitado com o Acesso PREMIUM.
+                Tenha acesso prioritário e ilimitado aos sinais, sem filas ou limites de uso. Cadastre-se em uma corretora parceira para liberar.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">

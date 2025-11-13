@@ -12,7 +12,7 @@ export interface AppConfig {
   iqOptionUrl: string;
   telegramUrl: string;
   hourlySignalLimit: number;
-  correlationChance: number;
+  correlationChance: number; // This will now be a fixed value
 }
 
 // Define the state for the config context
@@ -37,16 +37,11 @@ const defaultLimitConfig = {
     hourlySignalLimit: 3
 };
 
-const defaultStrategyConfig = {
-    correlationChance: 0.3
-};
-
 const defaultConfig: AppConfig = {
     ...defaultLinkConfig,
     ...defaultLimitConfig,
-    ...defaultStrategyConfig
+    correlationChance: 0.3 // Reverted to a fixed value
 };
-
 
 // Create the provider component
 export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -71,13 +66,11 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const fetchConfig = async () => {
       const linksRef = doc(firestore, 'appConfig', 'links');
       const limitationRef = doc(firestore, 'appConfig', 'limitation');
-      const strategyRef = doc(firestore, 'appConfig', 'strategy');
 
       try {
-        const [linksSnap, limitationSnap, strategySnap] = await Promise.all([
+        const [linksSnap, limitationSnap] = await Promise.all([
             getDoc(linksRef),
-            getDoc(limitationSnap),
-            getDoc(strategyRef),
+            getDoc(limitationRef),
         ]);
         
         let mergedConfig = {...defaultConfig};
@@ -100,15 +93,6 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           console.warn("Limitation config document not found. Creating it with defaults.");
           batch.set(limitationRef, defaultLimitConfig);
           needsWrite = true;
-        }
-
-        // Process Strategy
-        if (strategySnap.exists()) {
-            mergedConfig = { ...mergedConfig, ...strategySnap.data() };
-        } else {
-            console.warn("Strategy config document not found. Creating it with defaults.");
-            batch.set(strategyRef, defaultStrategyConfig);
-            needsWrite = true;
         }
 
         if (needsWrite) {
@@ -149,3 +133,5 @@ export const useAppConfig = (): ConfigContextState => {
   }
   return context;
 };
+
+    

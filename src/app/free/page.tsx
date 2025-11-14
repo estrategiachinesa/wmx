@@ -37,7 +37,6 @@ export type SignalData = {
 
 const DAILY_LIMIT_KEY = 'daily_free_signal_timestamp';
 const MARKET_MODE_KEY = 'isMarketModeActive';
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
 
 type FormData = {
   asset: Asset;
@@ -318,7 +317,7 @@ export default function FreePage() {
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-col sm:space-x-0 gap-2">
               <Button asChild>
-                <Link href={config?.hotmartUrl || '#'} target="_blank">
+                <Link href="/vendas">
                   Adquirir uma Licença
                 </Link>
               </Button>
@@ -382,7 +381,7 @@ export default function FreePage() {
                 Fechar
             </Button>
             <Button asChild>
-                <Link href={config?.hotmartUrl || '#'} target="_blank">
+                <Link href="/vendas">
                     Quero o Indicador
                 </Link>
             </Button>

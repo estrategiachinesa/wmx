@@ -593,7 +593,7 @@ export function SignalForm({
             {!isVip && (
               isFreeSignalPage ? (
                 <Button variant="link" className="w-full flex-col h-auto text-yellow-400 hover:text-yellow-300" asChild>
-                  <Link href={config?.hotmartUrl || '#'} target="_blank">
+                  <Link href="/vendas">
                     <Trophy className="h-5 w-5 mb-0.5" />
                     SEJA VIP
                   </Link>

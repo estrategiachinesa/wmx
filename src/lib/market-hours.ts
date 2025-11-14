@@ -1,4 +1,6 @@
 
+'use client';
+
 import { Asset } from '@/app/analisador/page';
 
 // All times are in America/Sao_Paulo (UTC-3)
@@ -7,49 +9,36 @@ type Schedule = {
   [day: number]: TimeRange[]; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 };
 
-const marketSchedules: Record<Asset, Schedule> = {
+const marketSchedules: Record<string, Schedule> = {
   'EUR/USD': {
-    0: [{ start: 21, end: 24 }], // Sunday
-    1: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Monday
-    2: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Tuesday
-    3: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Wednesday
-    4: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Thursday
-    5: [{ start: 0, end: 15.5 }], // Friday (until 15:30)
-    6: [], // Saturday (closed)
-  },
-  'EUR/USD (OTC)': {
-    0: [{ start: 0, end: 24 }], // Sunday
-    1: [{ start: 0, end: 1 }, { start: 2, end: 24 }], // Monday
-    2: [{ start: 0, end: 24 }], // Tuesday
-    3: [{ start: 0, end: 1 }, { start: 2, end: 24 }], // Wednesday
-    4: [{ start: 0, end: 24 }], // Thursday
-    5: [{ start: 0, end: 1 }, { start: 2, end: 24 }], // Friday
-    6: [{ start: 0, end: 24 }], // Saturday
+    0: [{ start: 22, end: 24 }], // Sunday
+    1: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Monday
+    2: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Tuesday
+    3: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Wednesday
+    4: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Thursday
+    5: [{ start: 0, end: 16.5 }], // Friday 00:00 - 16:30
+    6: [], // Saturday
   },
   'EUR/JPY': {
     0: [{ start: 21, end: 24 }], // Sunday
-    1: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Monday
-    2: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Tuesday
-    3: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Wednesday
-    4: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Thursday
-    5: [{ start: 0, end: 15.5 }], // Friday (until 15:30)
-    6: [], // Saturday (closed)
-  },
-  'EUR/JPY (OTC)': {
-    0: [{ start: 0, end: 24 }], // Sunday
-    1: [{ start: 0, end: 1 }, { start: 2, end: 24 }], // Monday
-    2: [{ start: 0, end: 24 }], // Tuesday
-    3: [{ start: 0, end: 1 }, { start: 2, end: 24 }], // Wednesday
-    4: [{ start: 0, end: 24 }], // Thursday
-    5: [{ start: 0, end: 1 }, { start: 2, end: 24 }], // Friday
-    6: [{ start: 0, end: 24 }], // Saturday
+    1: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Monday
+    2: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Tuesday
+    3: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Wednesday
+    4: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Thursday
+    5: [{ start: 0, end: 18 }], // Friday - This might need review based on broker
+    6: [], // Saturday
   },
 };
 
 export function isMarketOpenForAsset(asset: Asset): boolean {
-  const schedule = marketSchedules[asset];
+  // OTC markets are always open
+  if (asset.includes('(OTC)')) {
+    return true;
+  }
+
+  const schedule = marketSchedules[asset as keyof typeof marketSchedules];
   if (!schedule) {
-    return true; // Default to open if no schedule is defined
+    return false; // Default to closed if no schedule is defined for a non-OTC asset
   }
 
   // Get current time in America/Sao_Paulo timezone
@@ -70,5 +59,3 @@ export function isMarketOpenForAsset(asset: Asset): boolean {
 
   return false; // Current time is not in any open range
 }
-
-    

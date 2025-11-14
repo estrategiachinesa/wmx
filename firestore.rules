@@ -1,66 +1,64 @@
 
 /**
- * @fileoverview Firestore Security Rules for Chinese Trading Strategies.
+ * @fileoverview Firestore Security Rules for Estratégia Chinesa.
  *
  * Core Philosophy:
- * This ruleset enforces access control for trading strategies, VIP requests, and app configuration.
+ * This ruleset enforces access control for user data (history), VIP requests,
+ * and app configuration. The default state is to deny all access, with explicit
+ * permissions granted for specific paths and operations.
  *
  * Data Structure:
- * - `/appConfig/links`: Stores global app configuration like affiliate URLs.
- * - `/appConfig/limitation`: Stores global app configuration like usage limits.
- * - `/chineseStrategies/{chineseStrategyId}`: Stores trading strategies.
- * - `/vipRequests/{userId}`: Stores VIP access requests.
+ * - /users/{userId}/history/{docId}: Stores signal history for each user.
+ * - /appConfig/{configDoc}: Stores global app configuration like affiliate URLs.
+ * - /vipRequests/{userId}: Stores VIP access requests.
  *
  * Key Security Decisions:
- * - Public read access for app configuration and strategies.
- * - Writes to app configuration and strategies require authentication.
- * - Users can create or update their own VIP request document in `/vipRequests/{userId}`
- *   if they are authenticated and the document ID matches their `request.auth.uid`.
+ * - User data (history) is private. Users can only read and write to their own
+ *   history subcollection.
+ * - Public read access for app configuration.
+ * - Writes to app configuration require authentication.
+ * - Users can create or update their own VIP request document in /vipRequests/{userId}
+ *   if they are authenticated and the document ID matches their request.auth.uid.
  * - Reading of VIP requests is restricted to the user who owns the document.
- *
- * Denormalization for Authorization:
- * No denormalization is needed as authorization is based on authentication state and UID matching.
- *
- * Structural Segregation:
- * - `/appConfig`: For public configuration data.
- * - `/chineseStrategies`: For public strategy data.
- * - `/vipRequests`: For private, user-specific VIP requests.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Grants public read access to app configuration.
-     * @description Allows any user to create the document if it doesn't exist.
-     * @description Restricts updates to authenticated users.
-     * @path /appConfig/links
+     * @description Rules for the 'users' collection.
+     * @path /users/{userId}
      */
-    match /appConfig/links {
-      allow read: if true;
-      allow create: if true;
-      allow update: if isSignedIn();
+    match /users/{userId} {
+      // By default, deny read/write to the user document itself.
+      // Permissions are granted on subcollections below.
+      allow read, write: if false;
+
+      /**
+       * @description Rules for the 'history' subcollection.
+       * @path /users/{userId}/history/{historyId}
+       */
+      match /history/{historyId} {
+        /**
+         * @allow (list, create): A user can list their own history and create new entries.
+         *   - The user must be signed in.
+         *   - The userId in the path must match the user's UID.
+         *   - The data being written must be valid.
+         */
+        allow list, create: if isSignedIn() && isOwner(userId) && isValidHistoryEntry(request.resource.data);
+      }
     }
     
     /**
      * @description Grants public read access to app configuration.
      * @description Allows any user to create the document if it doesn't exist.
      * @description Restricts updates to authenticated users.
-     * @path /appConfig/limitation
+     * @path /appConfig/{configDoc}
      */
-    match /appConfig/limitation {
+    match /appConfig/{configDoc} {
       allow read: if true;
       allow create: if true;
       allow update: if isSignedIn();
-    }
-
-    /**
-     * @description Grants public read access to Chinese strategies, but restricts writes to authenticated users.
-     * @path /chineseStrategies/{chineseStrategyId}
-     */
-    match /chineseStrategies/{chineseStrategyId} {
-      allow read: if true;
-      allow write: if isSignedIn();
     }
 
     /**
@@ -80,7 +78,7 @@ service cloud.firestore {
       allow get: if isSignedIn() && isOwner(userId);
       allow write: if isSignedIn() && isOwner(userId) && isValidVipRequest(request, resource);
     }
-
+    
     // Helper functions.
     function isSignedIn() {
       return request.auth != null;
@@ -88,6 +86,15 @@ service cloud.firestore {
 
     function isOwner(userId) {
       return request.auth.uid == userId;
+    }
+
+    function isValidHistoryEntry(data) {
+      return data.asset is string &&
+             data.expirationTime is string &&
+             data.signal is string &&
+             data.targetTime is string &&
+             data.source is string &&
+             data.generatedAt == request.time;
     }
 
     function isValidVipRequest(req, res) {
@@ -98,8 +105,6 @@ service cloud.firestore {
                        req.resource.data.status == 'PENDING' &&
                        isBrokerIdValid;
       
-      // On update, the user can only change status to DEPOSIT_PENDING if previous state was AWAITING_DEPOSIT
-      // Or they can submit a new brokerId if the request was REJECTED.
       let isUpdatingToDepositPending = req.method == 'update' && 
                                        req.resource.data.status == 'DEPOSIT_PENDING' &&
                                        res.data.status == 'AWAITING_DEPOSIT';

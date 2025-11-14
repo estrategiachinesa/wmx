@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   AlertDialog,
@@ -22,6 +23,9 @@ import { useFirebase, useDoc, useMemoFirebase, useAppConfig } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import Link from 'next/link';
+import { generateSignal as generateClientSideSignal } from '@/lib/signal-generator';
 
 export type Asset = 
   | 'EUR/USD' | 'EUR/USD (OTC)'
@@ -54,74 +58,6 @@ type AccessState = 'checking' | 'granted' | 'denied';
 type SignalUsage = {
   timestamps: number[];
 }
-
-// Seeded pseudo-random number generator
-function seededRandom(seed: number) {
-    const x = Math.sin(seed) * 10000;
-    return x - Math.floor(x);
-}
-
-// Client-side signal generation with market correlation
-function generateClientSideSignal(input: FormData): Omit<SignalData, 'countdown' | 'operationCountdown' | 'operationStatus' | 'asset' | 'expirationTime'> {
-    const { asset, expirationTime } = input;
-    const now = new Date(); // Executed on the client
-    
-    // The seed is based on the current minute, making the signal consistent for all users within that same minute.
-    const minuteSeed = new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes()).getTime();
-
-    // --- Signal Generation Logic ---
-    const marketTrendSeed = minuteSeed;
-    const marketTrendRandom = seededRandom(marketTrendSeed);
-    const generalMarketSignal = marketTrendRandom < 0.5 ? 'CALL 🔼' : 'PUT 🔽';
-
-    const assetSpecificSeed = minuteSeed + asset.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-    const assetRandom = seededRandom(assetSpecificSeed);
-    const independentSignal = assetRandom < 0.5 ? 'CALL 🔼' : 'PUT 🔽';
-
-    const correlationSeed = minuteSeed + 1;
-    const correlationRandom = seededRandom(correlationSeed);
-    
-    let finalSignal: 'CALL 🔼' | 'PUT 🔽';
-    const correlationChance = 0.3; 
-
-    if (correlationRandom < correlationChance) {
-        finalSignal = generalMarketSignal;
-    } else {
-        finalSignal = independentSignal;
-    }
-
-    // --- Target Time Calculation ---
-    let targetTime: Date;
-    if (expirationTime === '1m') {
-        const nextMinute = new Date(now);
-        nextMinute.setSeconds(0, 0);
-        nextMinute.setMinutes(nextMinute.getMinutes() + 1);
-        targetTime = nextMinute;
-    } else { // 5m
-        const minutes = now.getMinutes();
-        const remainder = minutes % 5;
-        const minutesToAdd = 5 - remainder;
-        targetTime = new Date(now.getTime());
-        targetTime.setMinutes(minutes + minutesToAdd, 0, 0);
-        if (targetTime.getTime() < now.getTime()) {
-            targetTime.setMinutes(targetTime.getMinutes() + 5);
-        }
-    }
-
-    const targetTimeString = targetTime.toLocaleTimeString('en-US', {
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-    });
-
-    return {
-        signal: finalSignal,
-        targetTime: targetTimeString,
-        source: 'Aleatório' as const,
-        targetDate: targetTime,
-    };
-}
-
 
 export default function AnalisadorPage() {
   const router = useRouter();
@@ -293,9 +229,44 @@ export default function AnalisadorPage() {
     }
     return () => clearInterval(timer);
   }, [appState, signalData?.operationStatus]);
+
+  const saveSignalToHistory = useCallback((signal: SignalData) => {
+    if (!user || !firestore) return;
+    
+    try {
+      const historyCollection = collection(firestore, `users/${user.uid}/history`);
+      addDocumentNonBlocking(historyCollection, {
+        asset: signal.asset,
+        expirationTime: signal.expirationTime,
+        signal: signal.signal,
+        targetTime: signal.targetTime,
+        source: signal.source,
+        generatedAt: new Date()
+      });
+    } catch (error) {
+      console.error("Error saving signal to history:", error);
+      // We don't show a toast here to not bother the user with background errors
+    }
+  }, [user, firestore]);
   
  const handleAnalyze = async () => {
-    if (!isPremium && usageStorageKey && config) {
+    if (!config) {
+        toast({
+            variant: 'destructive',
+            title: 'Erro de Configuração',
+            description: 'A configuração da aplicação não foi carregada. Tente novamente.',
+        });
+        return;
+    }
+    if (!user || !firestore) {
+      toast({
+            variant: 'destructive',
+            title: 'Erro de Autenticação',
+            description: 'Não foi possível identificar o usuário. Tente fazer login novamente.',
+        });
+        return;
+    }
+    if (!isPremium && usageStorageKey) {
       const usageString = localStorage.getItem(usageStorageKey) || '{ "timestamps": [] }';
       const currentUsage: SignalUsage = JSON.parse(usageString);
       const oneHourAgo = Date.now() - 60 * 60 * 1000;
@@ -308,17 +279,19 @@ export default function AnalisadorPage() {
       }
     }
 
-
     setAppState('loading');
     
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     try {
-      // Logic is now client-side but consistent
-      const result = generateClientSideSignal(formData);
+      // Use the client-side signal generator
+      const result = generateClientSideSignal({
+        asset: formData.asset,
+        expirationTime: formData.expirationTime,
+      });
       
-      setSignalData({
+      const newSignalData: SignalData = {
         ...formData,
         signal: result.signal,
         targetTime: result.targetTime,
@@ -327,9 +300,12 @@ export default function AnalisadorPage() {
         countdown: null,
         operationCountdown: null,
         operationStatus: 'pending'
-      });
+      };
       
-      if (!isPremium && usageStorageKey && config) {
+      setSignalData(newSignalData);
+      saveSignalToHistory(newSignalData);
+
+      if (!isPremium && usageStorageKey) {
         // Update usage stats
         const usageString = localStorage.getItem(usageStorageKey) || '{ "timestamps": [] }';
         const currentUsage: SignalUsage = JSON.parse(usageString);
@@ -406,15 +382,22 @@ export default function AnalisadorPage() {
 
       <div className="flex flex-col min-h-screen">
         <header className="p-4 flex justify-between items-center">
-          {isPremium ? (
-             <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
-              PREMIUM
-            </div>
-          ) : (
-             <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
-              VIP
-            </div>
-          )}
+          <div className='flex items-center gap-4'>
+            {isPremium ? (
+              <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
+                PREMIUM
+              </div>
+            ) : (
+              <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
+                VIP
+              </div>
+            )}
+            <Button variant="ghost" size="sm" asChild>
+                <Link href="/historico">
+                    Histórico
+                </Link>
+            </Button>
+          </div>
            <button
             onClick={handleLogout}
             className="text-sm bg-destructive text-destructive-foreground hover:bg-destructive/90 px-3 py-1.5 rounded-md font-semibold"

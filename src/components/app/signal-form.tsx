@@ -94,7 +94,7 @@ export function SignalForm({
     }
      // Also open modal if user becomes approved and hasn't seen the welcome message
      if (vipStatus === 'APPROVED') {
-        const hasSeenWelcome = localStorage.getItem('hasSeenPremiumWelcome');
+        const hasSeenWelcome = localStorage.getItem('hasSeenVipWelcome');
         if (!hasSeenWelcome) {
             setVipModalOpen(true);
         }
@@ -122,11 +122,11 @@ export function SignalForm({
         };
         
         if (vipStatus === 'PENDING') {
-            setWaitingMessage('Seu acesso PREMIUM está em análise. Enquanto isso, aguarde na fila.');
+            setWaitingMessage('Seu acesso VIP está em análise. Enquanto isso, aguarde na fila.');
         } else if (vipStatus === 'AWAITING_DEPOSIT') {
-            setWaitingMessage('Cadastro verificado! Aguardando depósito para liberar seu acesso PREMIUM.');
+            setWaitingMessage('Cadastro verificado! Aguardando depósito para liberar seu acesso VIP.');
         } else if (vipStatus === 'DEPOSIT_PENDING') {
-            setWaitingMessage('Confirmação de depósito em análise. Em breve seu acesso PREMIUM será liberado.');
+            setWaitingMessage('Confirmação de depósito em análise. Em breve seu acesso VIP será liberado.');
         } else {
             setWaitingMessage(`Estamos na fila, aguardando o melhor momento... (Posição: #${queuePosition})`);
             interval = setInterval(updateMessage, 8000);
@@ -190,7 +190,7 @@ export function SignalForm({
 
       toast({
         title: 'Solicitação Enviada!',
-        description: 'Seu ID foi recebido e está em análise. A liberação do acesso PREMIUM pode levar algumas horas.',
+        description: 'Seu ID foi recebido e está em análise. A liberação do acesso VIP pode levar algumas horas.',
       });
       setVipModalOpen(false);
       setBrokerId('');
@@ -222,7 +222,7 @@ export function SignalForm({
       await setDoc(vipRequestRef, { status: 'DEPOSIT_PENDING' }, { merge: true });
       toast({
         title: 'Confirmação Recebida!',
-        description: 'Estamos verificando seu depósito. Seu acesso PREMIUM será liberado em breve.',
+        description: 'Estamos verificando seu depósito. Seu acesso VIP será liberado em breve.',
       });
       setVipModalOpen(false);
     } catch (error) {
@@ -239,7 +239,7 @@ export function SignalForm({
 
   const buttonDisabled = isLoading || !isMarketOpen || (hasReachedLimit && !waitingMessage);
 
-  const getPremiumModalContent = () => {
+  const getVipModalContent = () => {
     if (!config) {
         return (
              <div className="py-4 text-center">
@@ -254,7 +254,7 @@ export function SignalForm({
         return (
              <>
             <DialogHeader>
-              <DialogTitle className="text-2xl font-headline text-primary">🎉 Parabéns! Acesso PREMIUM Liberado!</DialogTitle>
+              <DialogTitle className="text-2xl font-headline text-primary">🎉 Parabéns! Acesso VIP Liberado!</DialogTitle>
               <DialogDescription>
                 Você agora tem acesso prioritário e ilimitado a todos os sinais. Toque em "Começar" e aproveite ao máximo!
               </DialogDescription>
@@ -264,7 +264,7 @@ export function SignalForm({
             </div>
             <DialogFooter>
               <Button onClick={() => {
-                localStorage.setItem('hasSeenPremiumWelcome', 'true');
+                localStorage.setItem('hasSeenVipWelcome', 'true');
                 setVipModalOpen(false);
               }}>
                 Começar a Usar
@@ -298,7 +298,7 @@ export function SignalForm({
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline text-primary">🎉 Cadastro Verificado!</DialogTitle>
               <DialogDescription>
-                Falta apenas um passo! Faça seu primeiro depósito na corretora para ativar seu Acesso PREMIUM.
+                Falta apenas um passo! Faça seu primeiro depósito na corretora para ativar seu Acesso VIP.
               </DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">
@@ -365,7 +365,7 @@ export function SignalForm({
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline text-destructive">Solicitação Rejeitada</DialogTitle>
               <DialogDescription>
-                Sua solicitação de acesso PREMIUM foi rejeitada. Isso geralmente ocorre se o cadastro não foi feito através do nosso link de afiliado ou se o e-mail já estava registrado na corretora.
+                Sua solicitação de acesso VIP foi rejeitada. Isso geralmente ocorre se o cadastro não foi feito através do nosso link de afiliado ou se o e-mail já estava registrado na corretora.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -415,38 +415,40 @@ export function SignalForm({
             </DialogFooter>
           </>
         )
-      default: // No status
+      default: // No status or limit reached
         return (
           <>
             <DialogHeader>
-              <DialogTitle className="text-2xl font-headline text-primary">Conheça o Plano Premium</DialogTitle>
+              <DialogTitle className="text-2xl font-headline text-primary">Desbloqueie o Acesso VIP</DialogTitle>
               <DialogDescription>
-                Tenha acesso prioritário e ilimitado aos sinais, sem filas ou limites de uso. Cadastre-se em uma corretora parceira para liberar.
+                {hasReachedLimit 
+                  ? "Você atingiu o limite de sinais por hora. Para continuar analisando sem limites, adquira o plano VIP ou libere seu acesso via cadastro."
+                  : "Tenha acesso prioritário e ilimitado aos sinais, sem filas ou limites. Adquira o plano VIP ou libere seu acesso via cadastro."
+                }
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
-              <div className="p-4 bg-secondary/50 rounded-lg">
-                <h3 className="font-bold mb-2">PASSO 1: Cadastre-se na Corretora</h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Use um dos nossos links para se cadastrar na corretora. É crucial que você use um e-mail novo, que nunca tenha sido usado na corretora antes, para garantir que seu cadastro seja vinculado corretamente.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <Button className="w-full" asChild>
-                    <Link href={config.iqOptionUrl} target="_blank">
-                      Cadastrar na IQ Option
-                    </Link>
-                  </Button>
-                   <Button className="w-full" asChild>
-                    <Link href={config.exnovaUrl} target="_blank">
-                      Cadastrar na Exnova
-                    </Link>
-                  </Button>
-                </div>
+              <Button className="w-full h-12 text-base" asChild>
+                  <Link href="/vendas">
+                    <Crown className="mr-2" /> Quero o Acesso VIP (Via Pagamento)
+                  </Link>
+              </Button>
+
+              <div className="relative my-2">
+                  <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                      OU
+                      </span>
+                  </div>
               </div>
-              <div className="p-4 bg-secondary/50 rounded-lg">
-                <h3 className="font-bold mb-2">PASSO 2: Valide seu Acesso</h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Após o cadastro, insira o ID da sua conta da corretora abaixo para verificarmos seu cadastro.
+
+              <div className="p-4 bg-secondary/50 rounded-lg space-y-3">
+                <h3 className="font-bold">Libere o Acesso VIP (Via Cadastro)</h3>
+                <p className="text-sm text-muted-foreground">
+                  Cadastre-se na corretora por nosso link e faça um depósito de qualquer valor para ter acesso VIP sem custo.
                 </p>
                 <div className="flex w-full items-center space-x-2">
                   <Input
@@ -462,11 +464,17 @@ export function SignalForm({
                     {isSubmittingId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   </Button>
                 </div>
+                 <Button className="w-full" asChild variant="secondary">
+                    <Link href={config.exnovaUrl} target="_blank">
+                      Cadastrar na Corretora
+                    </Link>
+                  </Button>
               </div>
+
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setVipModalOpen(false)}>
-                Continuar no VIP
+                Continuar com Limites
               </Button>
             </DialogFooter>
           </>
@@ -601,7 +609,7 @@ export function SignalForm({
               ) : (
                 <Button variant="link" className="w-full flex-col h-auto text-purple-400 hover:text-purple-300" onClick={() => setVipModalOpen(true)}>
                     <Crown className="h-5 w-5 mb-0.5" />
-                    PREMIUM
+                    SEJA VIP
                 </Button>
               )
             )}
@@ -610,9 +618,11 @@ export function SignalForm({
 
       <Dialog open={isVipModalOpen} onOpenChange={setVipModalOpen}>
         <DialogContent className="sm:max-w-lg">
-          {getPremiumModalContent()}
+          {getVipModalContent()}
         </DialogContent>
       </Dialog>
     </>
   );
 }
+
+    

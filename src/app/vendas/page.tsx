@@ -1,3 +1,4 @@
+
 'use client';
 
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,7 @@ export default function SalesPage() {
 
         <Card className="bg-background/50 backdrop-blur-sm border-border/50 shadow-2xl shadow-primary/10">
           <CardHeader className="text-center p-8 border-b border-border/20">
-            <h2 className="text-3xl font-bold text-primary">Acesso Premium Vitalício</h2>
+            <h2 className="text-3xl font-bold text-primary">Acesso VIP Vitalício</h2>
             <p className="text-muted-foreground mt-2">Um único pagamento para acesso para sempre. Sem mensalidades.</p>
           </CardHeader>
           <CardContent className="p-8 grid md:grid-cols-2 gap-8">
@@ -54,7 +55,7 @@ export default function SalesPage() {
               <Feature
                 icon={Users}
                 title="Suporte Exclusivo"
-                description="Entre no nosso grupo exclusivo para membros Premium e tire suas dúvidas diretamente com a equipe."
+                description="Entre no nosso grupo exclusivo para membros VIP e tire suas dúvidas diretamente com a equipe."
               />
                <Feature
                 icon={Gift}
@@ -76,7 +77,7 @@ export default function SalesPage() {
               >
                 <Link href={config?.hotmartUrl || '#'} target="_blank">
                   <Zap className="mr-2" />
-                  QUERO ACESSO ILIMITADO AGORA
+                  QUERO ACESSO VIP AGORA
                 </Link>
               </Button>
               <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
@@ -95,3 +96,5 @@ export default function SalesPage() {
     </div>
   );
 }
+
+    

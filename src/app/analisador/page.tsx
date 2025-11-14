@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -69,8 +68,8 @@ export default function AnalisadorPage() {
   const [isMarketOpen, setIsMarketOpen] = useState(true);
   const [signalUsage, setSignalUsage] = useState<SignalUsage>({ timestamps: [] });
   const [hasReachedLimit, setHasReachedLimit] = useState(false);
-  const [isPremium, setIsPremium] = useState(false);
-  const [isPremiumModalOpen, setPremiumModalOpen] = useState(false);
+  const [isVip, setIsVip] = useState(false);
+  const [isVipModalOpen, setVipModalOpen] = useState(false);
   const { toast } = useToast();
   
   const usageStorageKey = user ? `signalUsage_${user.uid}` : null;
@@ -81,7 +80,7 @@ export default function AnalisadorPage() {
     return doc(firestore, 'vipRequests', user.uid);
   }, [firestore, user]);
 
-  const { data: premiumData, isLoading: isPremiumLoading } = useDoc(vipRequestRef);
+  const { data: vipData, isLoading: isVipLoading } = useDoc(vipRequestRef);
 
   const [formData, setFormData] = useState<FormData>({
     asset: 'EUR/JPY',
@@ -122,28 +121,28 @@ export default function AnalisadorPage() {
   }, [user, isUserLoading, auth]);
 
    useEffect(() => {
-    const isApproved = premiumData && (premiumData as any).status === 'APPROVED';
+    const isApproved = vipData && (vipData as any).status === 'APPROVED';
     
     if (isApproved) {
-      setIsPremium(true);
+      setIsVip(true);
       document.documentElement.classList.add('theme-premium');
 
-      const hasSeenWelcome = localStorage.getItem('hasSeenPremiumWelcome');
+      const hasSeenWelcome = localStorage.getItem('hasSeenVipWelcome');
       if (!hasSeenWelcome) {
-        setPremiumModalOpen(true);
+        setVipModalOpen(true);
       }
     } else {
-      setIsPremium(false);
+      setIsVip(false);
       document.documentElement.classList.remove('theme-premium');
     }
      return () => {
       document.documentElement.classList.remove('theme-premium');
     };
-  }, [premiumData]);
+  }, [vipData]);
 
   // Effect for checking and updating signal usage limit
   useEffect(() => {
-    if (isPremium || !usageStorageKey || !config) {
+    if (isVip || !usageStorageKey || !config) {
       setHasReachedLimit(false);
       return;
     }
@@ -165,7 +164,7 @@ export default function AnalisadorPage() {
       setHasReachedLimit(recentTimestamps.length >= config.hourlySignalLimit);
 
     }
-  }, [appState, isPremium, usageStorageKey, config]);
+  }, [appState, isVip, usageStorageKey, config]);
 
 
   useEffect(() => {
@@ -246,7 +245,7 @@ export default function AnalisadorPage() {
         });
         return;
     }
-    if (!isPremium && usageStorageKey) {
+    if (!isVip && usageStorageKey) {
       const usageString = localStorage.getItem(usageStorageKey) || '{ "timestamps": [] }';
       const currentUsage: SignalUsage = JSON.parse(usageString);
       const oneHourAgo = Date.now() - 60 * 60 * 1000;
@@ -254,7 +253,7 @@ export default function AnalisadorPage() {
 
       if (recentTimestamps.length >= config.hourlySignalLimit) {
           setHasReachedLimit(true);
-          setPremiumModalOpen(true);
+          setVipModalOpen(true);
           return;
       }
     }
@@ -285,7 +284,7 @@ export default function AnalisadorPage() {
       
       setSignalData(newSignalData);
 
-      if (!isPremium && usageStorageKey) {
+      if (!isVip && usageStorageKey) {
         // Update usage stats
         const usageString = localStorage.getItem(usageStorageKey) || '{ "timestamps": [] }';
         const currentUsage: SignalUsage = JSON.parse(usageString);
@@ -321,12 +320,12 @@ export default function AnalisadorPage() {
   const handleLogout = async () => {
     await auth.signOut();
     localStorage.removeItem('loginTimestamp');
-    localStorage.removeItem('hasSeenPremiumWelcome'); // Clear welcome message flag on logout
+    localStorage.removeItem('hasSeenVipWelcome'); // Clear welcome message flag on logout
     router.push('/');
   }
 
   // Loading screen while checking user auth
-  if (accessState === 'checking' || isPremiumLoading || isConfigLoading) {
+  if (accessState === 'checking' || isVipLoading || isConfigLoading) {
       return (
           <div className="flex h-screen w-full items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin" />
@@ -363,15 +362,9 @@ export default function AnalisadorPage() {
       <div className="flex flex-col min-h-screen">
         <header className="p-4 flex justify-between items-center">
           <div className='flex items-center gap-4'>
-            {isPremium ? (
-              <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
-                PREMIUM
-              </div>
-            ) : (
-              <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
-                VIP
-              </div>
-            )}
+            <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
+              {isVip ? 'VIP' : 'MEMBRO'}
+            </div>
           </div>
            <button
             onClick={handleLogout}
@@ -402,11 +395,11 @@ export default function AnalisadorPage() {
                 hasReachedLimit={hasReachedLimit}
                 user={user}
                 firestore={useFirebase().firestore}
-                isVip={isPremium}
-                vipStatus={(premiumData as any)?.status}
-                isVipModalOpen={isPremiumModalOpen}
-                setVipModalOpen={setPremiumModalOpen}
-                rejectedBrokerId={(premiumData as any)?.brokerId}
+                isVip={isVip}
+                vipStatus={(vipData as any)?.status}
+                isVipModalOpen={isVipModalOpen}
+                setVipModalOpen={setVipModalOpen}
+                rejectedBrokerId={(vipData as any)?.brokerId}
               />
              ) : (
               signalData && <SignalResult data={signalData} onReset={handleReset} />
@@ -423,3 +416,5 @@ export default function AnalisadorPage() {
     </>
   );
 }
+
+    

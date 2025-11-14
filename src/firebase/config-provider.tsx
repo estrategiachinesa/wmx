@@ -111,7 +111,7 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         } else {
             console.warn("Remote values config document not found. Creating it with defaults.");
             batch.set(remoteValuesRef, defaultRemoteValuesConfig);
-            needsWrite = true;
+needsWrite = true;
         }
 
         if (needsWrite) {

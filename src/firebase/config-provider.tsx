@@ -4,6 +4,7 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { doc, getDoc, setDoc, writeBatch } from 'firebase/firestore';
 import { useFirestore } from './provider';
+import { initializeFirebase } from '.';
 
 // Define the shape of the configuration object
 export interface AppConfig {
@@ -12,7 +13,7 @@ export interface AppConfig {
   iqOptionUrl: string;
   telegramUrl: string;
   hourlySignalLimit: number;
-  correlationChance: number; // This will now be a fixed value
+  correlationChance: number;
 }
 
 // Define the state for the config context
@@ -37,10 +38,15 @@ const defaultLimitConfig = {
     hourlySignalLimit: 3
 };
 
+// New remote config for correlation
+const defaultRemoteValuesConfig = {
+    correlationChance: 0.7
+};
+
 const defaultConfig: AppConfig = {
     ...defaultLinkConfig,
     ...defaultLimitConfig,
-    correlationChance: 0.3 // Reverted to a fixed value
+    ...defaultRemoteValuesConfig
 };
 
 // Create the provider component
@@ -55,6 +61,8 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
 
   useEffect(() => {
     if (!firestore) {
+      // This case might happen during server-side rendering or if Firebase initialization fails.
+      // We provide the hardcoded defaults.
       setConfigState({
         config: defaultConfig,
         isConfigLoading: false,
@@ -66,11 +74,13 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const fetchConfig = async () => {
       const linksRef = doc(firestore, 'appConfig', 'links');
       const limitationRef = doc(firestore, 'appConfig', 'limitation');
+      const remoteValuesRef = doc(firestore, 'appConfig', 'remoteValues');
 
       try {
-        const [linksSnap, limitationSnap] = await Promise.all([
+        const [linksSnap, limitationSnap, remoteValuesSnap] = await Promise.all([
             getDoc(linksRef),
             getDoc(limitationRef),
+            getDoc(remoteValuesRef),
         ]);
         
         let mergedConfig = {...defaultConfig};
@@ -93,6 +103,15 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           console.warn("Limitation config document not found. Creating it with defaults.");
           batch.set(limitationRef, defaultLimitConfig);
           needsWrite = true;
+        }
+        
+        // Process Remote Values
+        if (remoteValuesSnap.exists()) {
+            mergedConfig = { ...mergedConfig, ...remoteValuesSnap.data() };
+        } else {
+            console.warn("Remote values config document not found. Creating it with defaults.");
+            batch.set(remoteValuesRef, defaultRemoteValuesConfig);
+            needsWrite = true;
         }
 
         if (needsWrite) {
@@ -133,5 +152,3 @@ export const useAppConfig = (): ConfigContextState => {
   }
   return context;
 };
-
-    

@@ -11,22 +11,22 @@ type Schedule = {
 
 const marketSchedules: Record<string, Schedule> = {
   'EUR/USD': {
-    0: [{ start: 22, end: 24 }], // Domingo 22:00 - 23:59
-    1: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Segunda
-    2: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Terça
-    3: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Quarta
-    4: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Quinta
-    5: [{ start: 0, end: 16.5 }], // Sexta 00:00 - 16:30
-    6: [], // Sábado
+    0: [{ start: 22, end: 24 }], // Sunday
+    1: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Monday
+    2: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Tuesday
+    3: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Wednesday
+    4: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Thursday
+    5: [{ start: 0, end: 16.5 }], // Friday 00:00 - 16:30
+    6: [], // Saturday
   },
   'EUR/JPY': {
-    0: [{ start: 21, end: 24 }], // Domingo 21:00 - 23:59
-    1: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Segunda
-    2: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Terça
-    3: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Quarta
-    4: [{ start: 0, end: 18 }], // Quinta - CORRIGIDO: Fecha às 18:00 e não reabre.
-    5: [], // Sexta - Fechado
-    6: [], // Sábado - Fechado
+    0: [{ start: 21, end: 24 }], // Sunday
+    1: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Monday
+    2: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Tuesday
+    3: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Wednesday
+    4: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Thursday
+    5: [{ start: 0, end: 18 }], // Friday - This might need review based on broker
+    6: [], // Saturday
   },
 };
 

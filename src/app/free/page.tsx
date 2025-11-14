@@ -19,14 +19,14 @@ import Link from 'next/link';
 import { OnlineServer } from '@/components/app/OnlineServer';
 import { Asset, ExpirationTime } from '@/app/analisador/page';
 import { useAppConfig } from '@/firebase';
-import { generateSignal } from '@/lib/signal-generator';
+import { generateSignal } from '@/app/analisador/actions';
 
 export type SignalData = {
   asset: Asset;
   expirationTime: ExpirationTime;
   signal: 'CALL 🔼' | 'PUT 🔽' | '?';
   targetTime: string;
-  source?: 'Aleatório';
+  source?: 'IA' | 'Estratégia' | 'Aleatório';
   targetDate: Date;
   countdown: number | null;
   operationCountdown: number | null;
@@ -128,7 +128,11 @@ export default function FreePage() {
 
     if (isMarketModeActive) {
         try {
-            const realSignal = generateSignal(formData);
+            const realSignal = await generateSignal({
+                ...formData,
+                isPremium: false,
+                correlationChance: config?.correlationChance || 0.7
+            });
             setSignalData({
                 ...formData,
                 ...realSignal,

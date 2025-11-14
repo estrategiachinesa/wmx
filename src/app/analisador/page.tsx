@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   AlertDialog,
@@ -23,9 +23,9 @@ import { useFirebase, useDoc, useMemoFirebase, useAppConfig } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { generateSignal } from '@/lib/signal-generator';
+import { addDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import Link from 'next/link';
-
+import { generateSignal } from '@/app/analisador/actions';
 
 export type Asset = 
   | 'EUR/USD' | 'EUR/USD (OTC)'
@@ -45,7 +45,7 @@ export type SignalData = {
   expirationTime: ExpirationTime;
   signal: 'CALL 🔼' | 'PUT 🔽';
   targetTime: string;
-  source: 'Aleatório';
+  source: 'IA' | 'Estratégia' | 'Aleatório';
   targetDate: Date;
   countdown: number | null;
   operationCountdown: number | null;
@@ -184,7 +184,7 @@ export default function AnalisadorPage() {
       const isEurJpyOpen = isMarketOpenForAsset('EUR/JPY');
       if (!isEurUsdOpen && !isEurJpyOpen) {
         setShowOTC(true);
-        setFormData(prev => ({ ...prev, asset: 'EUR/JPY (OTC)' }));
+        setFormData(prev => ({ ...prev, asset: 'EUR/USD (OTC)' }));
       }
     };
     
@@ -229,6 +229,25 @@ export default function AnalisadorPage() {
     }
     return () => clearInterval(timer);
   }, [appState, signalData?.operationStatus]);
+
+  const saveSignalToHistory = useCallback((signal: SignalData) => {
+    if (!user || !firestore) return;
+    
+    try {
+      const historyCollection = collection(firestore, `users/${user.uid}/history`);
+      addDocumentNonBlocking(historyCollection, {
+        asset: signal.asset,
+        expirationTime: signal.expirationTime,
+        signal: signal.signal,
+        targetTime: signal.targetTime,
+        source: signal.source,
+        generatedAt: new Date()
+      });
+    } catch (error) {
+      console.error("Error saving signal to history:", error);
+      // We don't show a toast here to not bother the user with background errors
+    }
+  }, [user, firestore]);
   
  const handleAnalyze = async () => {
     if (!config) {
@@ -266,7 +285,12 @@ export default function AnalisadorPage() {
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     try {
-      const result = generateSignal(formData);
+      const result = await generateSignal({
+        asset: formData.asset,
+        expirationTime: formData.expirationTime,
+        isPremium: isPremium,
+        correlationChance: config.correlationChance
+      });
       
       const newSignalData: SignalData = {
         ...formData,
@@ -280,6 +304,7 @@ export default function AnalisadorPage() {
       };
       
       setSignalData(newSignalData);
+      saveSignalToHistory(newSignalData);
 
       if (!isPremium && usageStorageKey) {
         // Update usage stats
@@ -368,6 +393,11 @@ export default function AnalisadorPage() {
                 VIP
               </div>
             )}
+            <Button variant="ghost" size="sm" asChild>
+                <Link href="/historico">
+                    Histórico
+                </Link>
+            </Button>
           </div>
            <button
             onClick={handleLogout}

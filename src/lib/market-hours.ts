@@ -11,11 +11,11 @@ type Schedule = {
 
 const marketSchedules: Record<string, Schedule> = {
   'EUR/USD': {
-    0: [{ start: 22, end: 24 }], // Domingo 22:00 - 23:59 (for code logic, end is 24:00)
+    0: [{ start: 22, end: 24 }], // Domingo 22:00 - 23:59
     1: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Segunda
     2: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Terça
     3: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Quarta
-    4: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Quinta (Reads 00-18 from Wed and then 22-24)
+    4: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Quinta
     5: [{ start: 0, end: 16.5 }], // Sexta 00:00 - 16:30
     6: [], // Sábado
   },
@@ -24,9 +24,9 @@ const marketSchedules: Record<string, Schedule> = {
     1: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Segunda
     2: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Terça
     3: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Quarta
-    4: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Quinta
-    5: [{ start: 0, end: 16.5 }], // Sexta 00:00 - 16:30
-    6: [], // Sábado
+    4: [{ start: 0, end: 18 }], // Quinta - CORRIGIDO: Fecha às 18:00 e não reabre.
+    5: [], // Sexta - Fechado
+    6: [], // Sábado - Fechado
   },
 };
 
@@ -36,7 +36,7 @@ export function isMarketOpenForAsset(asset: Asset): boolean {
     return true;
   }
 
-  const schedule = marketSchedules[asset];
+  const schedule = marketSchedules[asset as keyof typeof marketSchedules];
   if (!schedule) {
     return false; // Default to closed if no schedule is defined for a non-OTC asset
   }

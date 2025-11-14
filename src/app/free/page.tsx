@@ -129,8 +129,17 @@ export default function FreePage() {
     await new Promise(resolve => setTimeout(resolve, 1500));
 
     if (isMarketModeActive) {
+        if (!config) {
+            console.error("Config not loaded for real signal generation");
+            setFailureModalOpen(true);
+            setAppState('form');
+            return;
+        }
         try {
-            const realSignal = generateClientSideSignal(formData);
+            const realSignal = generateClientSideSignal({
+              ...formData,
+              correlationChance: config.correlationChance
+            });
             setSignalData({
                 ...formData,
                 ...realSignal,

@@ -269,6 +269,7 @@ export default function AnalisadorPage() {
       const result = generateClientSideSignal({
         asset: formData.asset,
         expirationTime: formData.expirationTime,
+        correlationChance: config.correlationChance,
       });
       
       const newSignalData: SignalData = {

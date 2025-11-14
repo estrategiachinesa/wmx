@@ -10,6 +10,7 @@ export type ExpirationTime = '1m' | '5m';
 export type GenerateSignalInput = {
   asset: Asset;
   expirationTime: ExpirationTime;
+  correlationChance: number; // Added correlationChance to the input
 };
 
 export type GenerateSignalOutput = {
@@ -27,7 +28,7 @@ function seededRandom(seed: number) {
 
 // Client-side signal generation with market correlation
 export function generateSignal(input: GenerateSignalInput): GenerateSignalOutput {
-    const { asset, expirationTime } = input;
+    const { asset, expirationTime, correlationChance } = input;
 
     // IMPORTANT: new Date() is now executed on the client.
     const now = new Date();
@@ -48,7 +49,6 @@ export function generateSignal(input: GenerateSignalInput): GenerateSignalOutput
     const correlationRandom = seededRandom(correlationSeed);
     
     let finalSignal: 'CALL 🔼' | 'PUT 🔽';
-    const correlationChance = 0.3; 
 
     if (correlationRandom < correlationChance) {
         finalSignal = generalMarketSignal;

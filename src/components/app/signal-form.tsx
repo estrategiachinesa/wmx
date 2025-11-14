@@ -122,7 +122,7 @@ export function SignalForm({
         };
         
         if (vipStatus === 'PENDING') {
-            setWaitingMessage('Seu acesso VIP está em análise. Enquanto isso, aguarde na fila.');
+            setWaitingMessage('Seu acesso de MEMBRO está em análise. Enquanto isso, aguarde na fila.');
         } else if (vipStatus === 'AWAITING_DEPOSIT') {
             setWaitingMessage('Cadastro verificado! Aguardando depósito para liberar seu acesso VIP.');
         } else if (vipStatus === 'DEPOSIT_PENDING') {
@@ -190,7 +190,7 @@ export function SignalForm({
 
       toast({
         title: 'Solicitação Enviada!',
-        description: 'Seu ID foi recebido e está em análise. A liberação do acesso VIP pode levar algumas horas.',
+        description: 'Seu ID foi recebido e está em análise. A liberação do seu acesso pode levar algumas horas.',
       });
       setVipModalOpen(false);
       setBrokerId('');
@@ -278,7 +278,7 @@ export function SignalForm({
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline text-primary">Análise em Andamento</DialogTitle>
               <DialogDescription>
-                Seu cadastro foi recebido. Estamos verificando suas informações e seu acesso será liberado em breve.
+                Sua solicitação de acesso MEMBRO foi recebida. Estamos verificando seu ID e seu acesso será liberado em breve.
               </DialogDescription>
             </DialogHeader>
             <div className="py-4 text-center">
@@ -298,7 +298,7 @@ export function SignalForm({
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline text-primary">🎉 Cadastro Verificado!</DialogTitle>
               <DialogDescription>
-                Falta apenas um passo! Faça seu primeiro depósito na corretora para ativar seu Acesso VIP.
+                Falta apenas um passo para o Acesso VIP! Faça seu primeiro depósito na corretora para ativar o acesso ilimitado.
               </DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">
@@ -345,7 +345,7 @@ export function SignalForm({
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline text-primary">Verificação Final</DialogTitle>
               <DialogDescription>
-                Recebemos a confirmação do seu depósito. Estamos fazendo a última verificação e seu acesso será liberado em breve.
+                Recebemos a confirmação do seu depósito. Estamos fazendo a última verificação e seu acesso VIP será liberado em breve.
               </DialogDescription>
             </DialogHeader>
             <div className="py-4 text-center">
@@ -365,7 +365,7 @@ export function SignalForm({
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline text-destructive">Solicitação Rejeitada</DialogTitle>
               <DialogDescription>
-                Sua solicitação de acesso VIP foi rejeitada. Isso geralmente ocorre se o cadastro não foi feito através do nosso link de afiliado ou se o e-mail já estava registrado na corretora.
+                Sua solicitação de acesso foi rejeitada. Isso geralmente ocorre se o cadastro não foi feito através do nosso link de afiliado ou se o e-mail já estava registrado na corretora.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -419,7 +419,7 @@ export function SignalForm({
         return (
           <>
             <DialogHeader>
-              <DialogTitle className="text-2xl font-headline text-primary">Desbloqueie o Acesso VIP</DialogTitle>
+              <DialogTitle className="text-2xl font-headline text-primary">Desbloqueie o Acesso Ilimitado</DialogTitle>
               <DialogDescription>
                 {hasReachedLimit 
                   ? "Você atingiu o limite de sinais por hora. Para continuar analisando sem limites, adquira o plano VIP ou libere seu acesso via cadastro."
@@ -446,9 +446,9 @@ export function SignalForm({
               </div>
 
               <div className="p-4 bg-secondary/50 rounded-lg space-y-3">
-                <h3 className="font-bold">Libere o Acesso VIP (Via Cadastro)</h3>
+                <h3 className="font-bold">Torne-se MEMBRO (Acesso com limites)</h3>
                 <p className="text-sm text-muted-foreground">
-                  Cadastre-se na corretora por nosso link e faça um depósito de qualquer valor para ter acesso VIP sem custo.
+                  Cadastre-se na corretora por nosso link para se tornar um membro e reduzir a fila de espera.
                 </p>
                 <div className="flex w-full items-center space-x-2">
                   <Input
@@ -624,5 +624,3 @@ export function SignalForm({
     </>
   );
 }
-
-    

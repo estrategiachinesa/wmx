@@ -194,9 +194,11 @@ export default function LoginPage() {
 
           </CardContent>
         </Card>
-        <footer className="w-full text-center text-[0.6rem] text-foreground/50 p-4 mt-8">
-          <p>© 2025 ESTRATÉGIA CHINESA. </p>
-          <p>Todos os direitos reservados.</p>
+        <footer className="w-full text-center text-xs text-foreground/50 p-4 mt-8">
+          <p>© 2025 ESTRATÉGIA CHINESA. Todos os direitos reservados.</p>
+           <Link href="/legal" className="underline underline-offset-2">
+            Termos de Uso e Privacidade
+          </Link>
         </footer>
       </div>
     </>

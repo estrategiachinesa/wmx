@@ -98,10 +98,12 @@ export default function SalesPage() {
           </CardContent>
         </Card>
       </main>
-      <footer className="w-full text-center text-[0.6rem] text-foreground/50 p-4 mt-8">
-          <p>© 2025 ESTRATÉGIA CHINESA. </p>
-          <p>Todos os direitos reservados.</p>
-          <p className="max-w-xl mx-auto">Aviso Legal: Todas as estratégias e investimentos envolvem risco de perda. Nenhuma informação contida neste produto deve ser interpretada como uma garantia de resultados.</p>
+      <footer className="w-full text-center text-xs text-foreground/50 p-4 mt-8">
+          <p>© 2025 ESTRATÉGIA CHINESA. Todos os direitos reservados.</p>
+           <Link href="/legal" className="underline underline-offset-2">
+            Termos de Uso e Privacidade
+          </Link>
+          <p className="max-w-xl mx-auto text-[0.6rem] mt-2">Aviso Legal: Todas as estratégias e investimentos envolvem risco de perda. Nenhuma informação contida neste produto deve ser interpretada como uma garantia de resultados.</p>
         </footer>
     </div>
   );

@@ -45,12 +45,7 @@ export default function SalesPage() {
               <Feature
                 icon={BarChart}
                 title="Sinais Ilimitados"
-                description="Analise quantos ativos quiser, 24/7. Sem filas, sem limites de uso diário ou por hora."
-              />
-              <Feature
-                icon={Clock}
-                title="Acesso Prioritário"
-                description="Seja o primeiro a receber os sinais, sem atrasos. Acesso direto ao nosso algoritmo."
+                description="Analise quantos ativos quiser, 24/7."
               />
               <Feature
                 icon={Users}
@@ -96,5 +91,3 @@ export default function SalesPage() {
     </div>
   );
 }
-
-    

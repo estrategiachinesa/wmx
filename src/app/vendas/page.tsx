@@ -70,7 +70,7 @@ export default function SalesPage() {
                <Feature
                 icon={Gift}
                 title="Bônus Exclusivo"
-                description="Ao se registrar, você ganha acesso à uma conta com $10.000 para praticar sem riscos."
+                description="Ao se registrar, você ganha acesso à uma conta de treinamento com $10.000 para praticar sem riscos."
               />
             </div>
 

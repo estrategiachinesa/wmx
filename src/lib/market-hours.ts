@@ -1,4 +1,6 @@
 
+'use client';
+
 import { Asset } from '@/app/analisador/page';
 
 // All times are in America/Sao_Paulo (UTC-3)
@@ -7,49 +9,36 @@ type Schedule = {
   [day: number]: TimeRange[]; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
 };
 
-const marketSchedules: Record<Asset, Schedule> = {
+const marketSchedules: Record<string, Schedule> = {
   'EUR/USD': {
-    0: [{ start: 21, end: 24 }], // Sunday
-    1: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Monday
-    2: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Tuesday
-    3: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Wednesday
-    4: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Thursday
-    5: [{ start: 0, end: 15.5 }], // Friday (until 15:30)
-    6: [], // Saturday (closed)
-  },
-  'EUR/USD (OTC)': {
-    0: [{ start: 0, end: 21 }], // Sunday
-    1: [{ start: 17, end: 21 }], // Monday
-    2: [{ start: 17, end: 21 }], // Tuesday
-    3: [{ start: 17, end: 21 }], // Wednesday
-    4: [{ start: 17, end: 21 }], // Thursday
-    5: [{ start: 15.5, end: 24 }], // Friday
-    6: [{ start: 0, end: 24 }], // Saturday
+    0: [{ start: 22, end: 24 }], // Domingo 22:00 - 23:59 (for code logic, end is 24:00)
+    1: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Segunda
+    2: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Terça
+    3: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Quarta
+    4: [{ start: 0, end: 18 }, { start: 22, end: 24 }], // Quinta (Reads 00-18 from Wed and then 22-24)
+    5: [{ start: 0, end: 16.5 }], // Sexta 00:00 - 16:30
+    6: [], // Sábado
   },
   'EUR/JPY': {
-    0: [{ start: 21, end: 24 }], // Sunday
-    1: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Monday
-    2: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Tuesday
-    3: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Wednesday
-    4: [{ start: 0, end: 17 }, { start: 21, end: 24 }], // Thursday
-    5: [{ start: 0, end: 15.5 }], // Friday (until 15:30)
-    6: [], // Saturday (closed)
-  },
-  'EUR/JPY (OTC)': {
-    0: [{ start: 0, end: 21 }], // Sunday
-    1: [{ start: 17, end: 21 }], // Monday
-    2: [{ start: 17, end: 21 }], // Tuesday
-    3: [{ start: 17, end: 21 }], // Wednesday
-    4: [{ start: 17, end: 21 }], // Thursday
-    5: [{ start: 15.5, end: 24 }], // Friday
-    6: [{ start: 0, end: 24 }], // Saturday
+    0: [{ start: 21, end: 24 }], // Domingo 21:00 - 23:59
+    1: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Segunda
+    2: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Terça
+    3: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Quarta
+    4: [{ start: 0, end: 18 }, { start: 21, end: 24 }], // Quinta
+    5: [{ start: 0, end: 16.5 }], // Sexta 00:00 - 16:30
+    6: [], // Sábado
   },
 };
 
 export function isMarketOpenForAsset(asset: Asset): boolean {
+  // OTC markets are always open
+  if (asset.includes('(OTC)')) {
+    return true;
+  }
+
   const schedule = marketSchedules[asset];
   if (!schedule) {
-    return true; // Default to open if no schedule is defined
+    return false; // Default to closed if no schedule is defined for a non-OTC asset
   }
 
   // Get current time in America/Sao_Paulo timezone

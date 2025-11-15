@@ -406,42 +406,42 @@ export function SignalForm({
         return (
           <div className="theme-premium">
             <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-headline text-primary">Torne-se PREMIUM</DialogTitle>
-                <DialogDescription>
-                  No momento, nosso sistema está sobrecarregado e analisando a melhor operação para você. Para evitar filas, torne-se PREMIUM e tenha acesso prioritário.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="p-4 bg-secondary/50 rounded-lg space-y-3">
-                  <p className="text-sm text-muted-foreground">
-                    Cadastre-se na corretora pelo nosso link para se tornar PREMIUM, resgatar seu bônus, evitar a fila de espera e ter sinais ilimitados.
-                  </p>
-                  <Button className="w-full" asChild>
-                    <Link href={config.exnovaUrl} target="_blank">
-                      Cadastrar na Corretora
-                    </Link>
-                  </Button>
-                  <div className="flex w-full items-center space-x-2">
-                    <Input
-                      type="text"
-                      placeholder="ID da Corretora"
-                      value={brokerId}
-                      onChange={(e) => setBrokerId(e.target.value.replace(/\D/g, ''))}
-                      pattern="[0-9]*"
-                      disabled={isSubmittingId}
-                    />
-                    <Button type="submit" size="icon" onClick={handleIdSubmit} disabled={isSubmittingId || brokerId.length < 8}>
-                      {isSubmittingId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                <DialogHeader>
+                    <DialogTitle className="text-2xl font-headline text-primary">Torne-se PREMIUM</DialogTitle>
+                    <DialogDescription>
+                    No momento, nosso sistema está sobrecarregado e analisando a melhor operação para você. Para evitar filas, torne-se PREMIUM e tenha acesso prioritário.
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                    <div className="p-4 bg-secondary/50 rounded-lg space-y-3">
+                    <p className="text-sm text-muted-foreground">
+                        Cadastre-se na corretora pelo nosso link para se tornar PREMIUM, resgatar seu bônus, evitar a fila de espera e ter sinais ilimitados.
+                    </p>
+                    <Button className="w-full" asChild>
+                        <Link href={config.exnovaUrl} target="_blank">
+                        Cadastrar na Corretora
+                        </Link>
                     </Button>
-                  </div>
+                    <div className="flex w-full items-center space-x-2">
+                        <Input
+                        type="text"
+                        placeholder="ID da Corretora"
+                        value={brokerId}
+                        onChange={(e) => setBrokerId(e.target.value.replace(/\D/g, ''))}
+                        pattern="[0-9]*"
+                        disabled={isSubmittingId}
+                        />
+                        <Button type="submit" size="icon" onClick={handleIdSubmit} disabled={isSubmittingId || brokerId.length < 8}>
+                        {isSubmittingId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                        </Button>
+                    </div>
+                    </div>
                 </div>
-              </div>
-              <DialogFooter>
-                <Button variant="ghost" onClick={() => setVipModalOpen(false)}>
-                  Resgatar Depois
-                </Button>
-              </DialogFooter>
+                <DialogFooter>
+                    <Button variant="ghost" onClick={() => setVipModalOpen(false)}>
+                    Resgatar Depois
+                    </Button>
+                </DialogFooter>
             </DialogContent>
           </div>
         );
@@ -596,5 +596,3 @@ export function SignalForm({
     </>
   );
 }
-
-    

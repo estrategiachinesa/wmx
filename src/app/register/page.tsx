@@ -13,6 +13,7 @@ import Link from 'next/link';
 import { useFirebase } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function RegisterPage() {
   const [credentials, setCredentials] = useState({ email: '', password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [isWelcomeModalOpen, setWelcomeModalOpen] = useState(true);
+  const [hasAgreed, setHasAgreed] = useState(false);
   const { auth, isUserLoading, user } = useFirebase();
 
   useEffect(() => {
@@ -196,15 +198,24 @@ export default function RegisterPage() {
       </div>
 
        <Dialog open={isWelcomeModalOpen} onOpenChange={setWelcomeModalOpen}>
-        <DialogContent>
+        <DialogContent hideCloseButton={true}>
           <DialogHeader className="text-center items-center">
-            <DialogTitle className="text-2xl font-headline">Seja Bem-vindo!</DialogTitle>
+            <DialogTitle className="text-2xl font-headline">Atenção!</DialogTitle>
             <DialogDescription className="text-base">
-              Ao criar sua conta, você poderá adquirir uma licença para ter acesso ilimitado aos sinais da Estratégia Chinesa.
+              Para garantir que sua licença seja ativada corretamente, utilize no campo de e-mail o mesmo endereço de e-mail que você usou para comprar o acesso vitalício na Hotmart.
             </DialogDescription>
           </DialogHeader>
+           <div className="flex items-center space-x-2 pt-4">
+                <Checkbox id="terms" checked={hasAgreed} onCheckedChange={(checked) => setHasAgreed(checked as boolean)} />
+                <label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                    Li e concordo com os <Link href="/legal" target="_blank" className="text-primary underline">Termos de Uso</Link>.
+                </label>
+            </div>
           <DialogFooter className="pt-4">
-              <Button className="w-full" onClick={() => setWelcomeModalOpen(false)}>
+              <Button className="w-full" onClick={() => setWelcomeModalOpen(false)} disabled={!hasAgreed}>
                 Entendido
               </Button>
           </DialogFooter>

@@ -424,7 +424,7 @@ export function SignalForm({
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline text-primary">Torne-se PREMIUM</DialogTitle>
               <DialogDescription>
-                No momento nosso sistema esta sobrecarregado e estamos analisando a melhor operação para voce. Para evitar filas, resgate seu bonus e se Torne-se PREMIUM.
+                No momento, nosso sistema está sobrecarregado e analisando a melhor operação para você. Para evitar filas, torne-se PREMIUM e tenha acesso prioritário.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">

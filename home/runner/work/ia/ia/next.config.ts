@@ -1,6 +1,5 @@
 import type {NextConfig} from 'next';
 
-// This is a dynamic Next.js project configured for Firebase App Hosting.
 const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -13,5 +12,5 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Forcing a new commit to resolve git sync issue
+// Forcing a new commit
 export default nextConfig;

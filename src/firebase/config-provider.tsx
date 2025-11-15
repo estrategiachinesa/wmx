@@ -58,12 +58,88 @@ const defaultConfig: AppConfig = {
 
 // Create the provider component
 export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // For a static build, we won't fetch from Firestore. We'll use the defaults.
+  const { firestore } = initializeFirebase();
   const [configState, setConfigState] = useState<ConfigContextState>({
-    config: defaultConfig,
-    isConfigLoading: false, // Set to false as we are not loading anything.
+    config: null,
+    isConfigLoading: true,
     configError: null,
   });
+
+  useEffect(() => {
+    const fetchAndInitializeConfig = async () => {
+      if (!firestore) return;
+      
+      setConfigState(prevState => ({ ...prevState, isConfigLoading: true, configError: null }));
+
+      try {
+        const docRefs = {
+          links: doc(firestore, 'appConfig', 'links'),
+          limitation: doc(firestore, 'appConfig', 'limitation'),
+          remoteValues: doc(firestore, 'appConfig', 'remoteValues'),
+          registration: doc(firestore, 'appConfig', 'registration'),
+        };
+
+        const [linksSnap, limitationSnap, remoteValuesSnap, registrationSnap] = await Promise.all([
+          getDoc(docRefs.links),
+          getDoc(docRefs.limitation),
+          getDoc(docRefs.remoteValues),
+          getDoc(docRefs.registration),
+        ]);
+
+        let combinedConfig: AppConfig = { ...defaultConfig };
+        let mustInitialize = false;
+        
+        if (linksSnap.exists()) {
+          combinedConfig = { ...combinedConfig, ...linksSnap.data() };
+        } else {
+          mustInitialize = true;
+        }
+
+        if (limitationSnap.exists()) {
+          combinedConfig = { ...combinedConfig, ...limitationSnap.data() };
+        } else {
+          mustInitialize = true;
+        }
+
+        if (remoteValuesSnap.exists()) {
+          combinedConfig = { ...combinedConfig, ...remoteValuesSnap.data() };
+        } else {
+          mustInitialize = true;
+        }
+
+        if (registrationSnap.exists()) {
+          combinedConfig = { ...combinedConfig, ...registrationSnap.data() };
+        } else {
+          mustInitialize = true;
+        }
+        
+        setConfigState({ config: combinedConfig, isConfigLoading: false, configError: null });
+
+        if (mustInitialize) {
+          console.log("One or more config documents missing, initializing...");
+          const batch = writeBatch(firestore);
+          if (!linksSnap.exists()) batch.set(docRefs.links, defaultLinkConfig);
+          if (!limitationSnap.exists()) batch.set(docRefs.limitation, defaultLimitConfig);
+          if (!remoteValuesSnap.exists()) batch.set(docRefs.remoteValues, defaultRemoteValuesConfig);
+          if (!registrationSnap.exists()) batch.set(docRefs.registration, defaultRegistrationConfig);
+          await batch.commit();
+          console.log("Default configs initialized.");
+        }
+
+      } catch (error) {
+        console.error("Error fetching remote config:", error);
+        setConfigState({
+          config: defaultConfig, // Fallback to default on error
+          isConfigLoading: false,
+          configError: error instanceof Error ? error : new Error('An unknown error occurred'),
+        });
+      }
+    };
+
+    fetchAndInitializeConfig();
+
+  }, [firestore]);
+
 
   return (
     <ConfigContext.Provider value={configState}>
@@ -80,3 +156,5 @@ export const useAppConfig = (): ConfigContextState => {
   }
   return context;
 };
+
+    

@@ -50,21 +50,17 @@
         "hourlySignalLimit"
       ]
     },
-    "RegistrationCode": {
-      "title": "Registration Code",
-      "description": "A unique code provided after purchase to allow app registration. The document ID is the code itself.",
+    "RegistrationConfig": {
+      "title": "Registration Config",
+      "description": "Stores the secret code for app registration.",
       "type": "object",
       "properties": {
-        "isUsed": {
-          "type": "boolean",
-          "description": "Indicates if the code has already been used."
-        },
-        "usedBy": {
+        "registrationSecret": {
           "type": "string",
-          "description": "The UID of the user who used the code."
+          "description": "A secret code that users must enter to register."
         }
       },
-      "required": ["isUsed"]
+      "required": ["registrationSecret"]
     },
     "VipRequest": {
       "title": "VIP Access Request",
@@ -139,20 +135,14 @@
           "description": "Stores global application usage limits. This is a single document."
         }
       },
-      {
-        "path": "/registrationCodes/{codeId}",
+       {
+        "path": "/appConfig/registration",
         "definition": {
-          "entityName": "RegistrationCode",
+          "entityName": "RegistrationConfig",
           "schema": {
-            "$ref": "#/backend/entities/RegistrationCode"
+            "$ref": "#/backend/entities/RegistrationConfig"
           },
-          "description": "Stores unique registration codes. The document ID is the code itself.",
-           "params": [
-            {
-              "name": "codeId",
-              "description": "The unique registration code string."
-            }
-          ]
+          "description": "Stores the global registration secret. This is a single document."
         }
       },
       {
@@ -172,7 +162,7 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to handle VIP access requests and global app configurations. It now includes a collection for registration codes to secure the signup process. VIP requests are stored per user, using their UID as the document ID. Global configurations are stored in single documents under `/appConfig`. The registration codes are stored in their own collection where the document ID is the code itself, allowing for quick lookups."
+    "reasoning": "The Firestore structure is designed to handle VIP access requests and global app configurations. It now includes a registration document under /appConfig to hold a secret code for signup validation. VIP requests are stored per user, using their UID as the document ID. Global configurations are stored in single documents under `/appConfig` for easy access."
   }
 }
 

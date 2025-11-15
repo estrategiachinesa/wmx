@@ -10,9 +10,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { LineChart, Loader2, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { useFirebase } from '@/firebase';
+import { useFirebase, useAppConfig } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -26,6 +25,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [hasAgreed, setHasAgreed] = useState(false);
   const { auth, isUserLoading, user, firestore } = useFirebase();
+  const { config, isConfigLoading } = useAppConfig();
 
   const [registrationStep, setRegistrationStep] = useState<RegistrationStep>('codeValidation');
   const [activationCode, setActivationCode] = useState('');
@@ -42,27 +42,21 @@ export default function RegisterPage() {
         toast({ variant: 'destructive', title: 'Código Inválido', description: 'Por favor, insira um código de ativação.' });
         return;
     }
-    setIsCodeLoading(true);
-    try {
-        const codeRef = doc(firestore, 'registrationCodes', activationCode);
-        const codeDoc = await getDoc(codeRef);
-
-        if (codeDoc.exists() && !codeDoc.data().isUsed) {
-            // Mark code as used in a temporary way on the client, will be finalized on registration
-            localStorage.setItem('activationCode', activationCode);
-            setRegistrationStep('terms');
-            toast({ title: 'Código Validado!', description: 'Prossiga para o próximo passo.' });
-        } else if (codeDoc.exists() && codeDoc.data().isUsed) {
-            toast({ variant: 'destructive', title: 'Código Já Utilizado', description: 'Este código de ativação já foi usado. Entre em contato com o suporte.' });
-        } else {
-            toast({ variant: 'destructive', title: 'Código Inválido', description: 'O código de ativação não foi encontrado. Verifique e tente novamente.' });
-        }
-    } catch (error) {
-        console.error("Code validation error:", error);
-        toast({ variant: 'destructive', title: 'Erro de Validação', description: 'Ocorreu um erro ao validar o código. Tente novamente.' });
-    } finally {
-        setIsCodeLoading(false);
+    if (isConfigLoading || !config) {
+        toast({ variant: 'destructive', title: 'Aguarde', description: 'A configuração ainda está carregando. Tente novamente em um instante.' });
+        return;
     }
+
+    setIsCodeLoading(true);
+    // Client-side validation against the secret from config
+    if (activationCode === config.registrationSecret) {
+        localStorage.setItem('activationCodeValidated', 'true');
+        setRegistrationStep('terms');
+        toast({ title: 'Código Validado!', description: 'Prossiga para o próximo passo.' });
+    } else {
+        toast({ variant: 'destructive', title: 'Código Inválido', description: 'O código de ativação está incorreto. Verifique e tente novamente.' });
+    }
+    setIsCodeLoading(false);
   };
 
 
@@ -87,8 +81,8 @@ export default function RegisterPage() {
         return;
     }
 
-    const validatedCode = localStorage.getItem('activationCode');
-    if (!validatedCode) {
+    const isValidated = localStorage.getItem('activationCodeValidated');
+    if (isValidated !== 'true') {
         toast({ variant: 'destructive', title: 'Validação Necessária', description: 'Ocorreu um erro. Por favor, valide seu código novamente.' });
         setRegistrationStep('codeValidation');
         return;
@@ -96,15 +90,10 @@ export default function RegisterPage() {
 
     setIsLoading(true);
     try {
-        const userCredential = await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
-        const newUser = userCredential.user;
-
-        // Mark the code as used in Firestore
-        const codeRef = doc(firestore, 'registrationCodes', validatedCode);
-        await setDoc(codeRef, { isUsed: true, usedBy: newUser.uid }, { merge: true });
-
+        await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
+        
         localStorage.setItem('loginTimestamp', Date.now().toString());
-        localStorage.removeItem('activationCode'); // Clean up
+        localStorage.removeItem('activationCodeValidated'); // Clean up
 
         toast({
           title: 'Cadastro bem-sucedido!',
@@ -144,7 +133,7 @@ export default function RegisterPage() {
     };
   }, [handleRegister, handleCodeValidation, registrationStep]);
 
-  if (isUserLoading) {
+  if (isUserLoading || isConfigLoading) {
       return (
           <div className="flex h-screen w-full items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin" />

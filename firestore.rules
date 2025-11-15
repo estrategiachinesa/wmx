@@ -6,16 +6,14 @@
  * This ruleset enforces access control for VIP requests and app configuration.
  *
  * Data Structure:
- * - `/appConfig/{doc}`: Stores global app configurations.
- * - `/vipRequests/{userId}`: Stores VIP access requests.
- * - `/registrationCodes/{code}`: Stores unique codes for registration.
+ * - `/appConfig/{doc}`: Stores global app configurations. Publicly readable.
+ * - `/vipRequests/{userId}`: Stores VIP access requests. Restricted to owner.
  *
  * Key Security Decisions:
- * - Public read access for app configuration.
- * - Writes to app configuration require authentication.
+ * - Public read access for app configuration for all users.
+ * - Writes to app configuration require authentication (ideally admin).
  * - Users can create or update their own VIP request document.
  * - Reading of VIP requests is restricted to the owner.
- * - Registration codes can be read by anyone, but only marked as used by an admin/function.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -44,25 +42,6 @@ service cloud.firestore {
        */
       allow get: if isSignedIn() && isOwner(userId);
       allow write: if isSignedIn() && isOwner(userId) && isValidVipRequest(request, resource);
-    }
-    
-    /**
-     * @description Rules for registration codes.
-     * @path /registrationCodes/{code}
-     */
-    match /registrationCodes/{code} {
-      /**
-       * @allow (get): Any user can check if a code exists.
-       * @allow (update): Allow an authenticated user to mark a code as used for themselves.
-       *   This is triggered after successful account creation.
-       * @allow (create): Disallow client-side creation. Should be done server-side/manually.
-       */
-      allow get: if true;
-      allow create: if false; // Codes should be created via a secure admin process
-      allow update: if isSignedIn() && 
-                    request.resource.data.isUsed == true &&
-                    request.resource.data.usedBy == request.auth.uid &&
-                    !resource.data.isUsed; // Can only mark an unused code as used
     }
     
     // Helper functions.

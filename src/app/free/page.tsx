@@ -26,9 +26,9 @@ export type SignalData = {
   asset: Asset;
   expirationTime: ExpirationTime;
   signal: 'CALL 🔼' | 'PUT 🔽' | '?';
-  targetTime: string;
   source?: 'Aleatório';
   targetDate: Date;
+  targetTime: string;
   countdown: number | null;
   operationCountdown: number | null;
   operationStatus: 'pending' | 'active' | 'finished';
@@ -328,22 +328,22 @@ export default function FreePage() {
       <Dialog open={isFailureModalOpen} onOpenChange={setFailureModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Resgate seu Bônus! 🎁</DialogTitle>
+            <DialogTitle>Falha ao analisar ❌</DialogTitle>
             <DialogDescription>
-              Para analisar o mercado real e liberar os sinais, primeiro resgate seu bônus de $10.000 para treinar. Cadastre-se na corretora para ativar.
+              Não encontramos seu cadastro no sistema. É preciso se cadastrar e realizar um depósito de qualquer valor para gerar os sinais.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-col sm:space-x-0 gap-2">
-              <Button asChild className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:to-yellow-600">
-                <Link href={config?.exnovaUrl || '#'} target="_blank">
-                  Resgatar Bônus de $10.000
-                </Link>
-              </Button>
-               <Button asChild variant="secondary">
+            <Button asChild variant="secondary">
                 <Link href="/vip">
-                  Quero o Acesso Ilimitado
+                  Adquirir uma Licença
                 </Link>
-              </Button>
+            </Button>
+            <Button asChild className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:to-yellow-600">
+                <Link href={config?.exnovaUrl || '#'} target="_blank">
+                  Cadastrar agora
+                </Link>
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -411,5 +411,3 @@ export default function FreePage() {
     </>
   );
 }
-
-    

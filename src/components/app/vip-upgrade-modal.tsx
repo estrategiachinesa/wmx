@@ -159,7 +159,9 @@ export function VipUpgradeModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent>
-        {step === 'bonus' ? renderBonusStep() : renderMemberStep()}
+        <div className="theme-premium">
+          {step === 'bonus' ? renderBonusStep() : renderMemberStep()}
+        </div>
       </DialogContent>
     </Dialog>
   );

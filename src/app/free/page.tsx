@@ -21,6 +21,7 @@ import { OnlineServer } from '@/components/app/OnlineServer';
 import { Asset, ExpirationTime } from '@/app/analisador/page';
 import { useAppConfig } from '@/firebase';
 import { generateSignal as generateClientSideSignal } from '@/lib/signal-generator';
+import { Gift } from 'lucide-react';
 
 
 export type SignalData = {
@@ -328,20 +329,20 @@ export default function FreePage() {
       <Dialog open={isFailureModalOpen} onOpenChange={setFailureModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Falha ao analisar ❌</DialogTitle>
+            <DialogTitle>Resgate seu Bônus! 🎁</DialogTitle>
             <DialogDescription>
-              Não encontramos seu cadastro no sistema. É preciso se cadastrar e realizar um depósito de qualquer valor para gerar os sinais.
+              Para analisar o mercado real e liberar os sinais, primeiro resgate seu bônus de $10.000 para treinar. Cadastre-se na corretora para ativar.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-col sm:space-x-0 gap-2">
-              <Button asChild>
-                <Link href="/vip">
-                  Adquirir uma Licença
+              <Button asChild className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:to-yellow-600">
+                <Link href={config?.exnovaUrl || '#'} target="_blank">
+                  Resgatar Bônus de $10.000
                 </Link>
               </Button>
-              <Button asChild>
-                <Link href={config?.exnovaUrl || '#'} target="_blank">
-                  Cadastrar agora
+               <Button asChild variant="secondary">
+                <Link href="/vip">
+                  Quero o Acesso Ilimitado
                 </Link>
               </Button>
           </DialogFooter>
@@ -351,20 +352,20 @@ export default function FreePage() {
        <Dialog open={isWelcomeModalOpen} onOpenChange={setWelcomeModalOpen}>
         <DialogContent>
           <DialogHeader className="text-center items-center">
-            <DialogTitle className="text-2xl font-headline">ESTRATÉGIA CHINESA</DialogTitle>
-            <h3 className="text-lg font-bold text-primary">Atenção!</h3>
+            <Gift className="h-12 w-12 text-primary" />
+            <DialogTitle className="text-2xl font-headline">Você ganhou $10.000 para treinar!</DialogTitle>
             <DialogDescription className="text-base">
-              Para gerar os sinais da Estratégia Chinesa, você deve se cadastrar na plataforma e realizar um depósito de qualquer valor.
+             Para ter acesso aos sinais da Estratégia Chinesa e começar a operar, resgate seu bônus de treinamento agora.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-col sm:space-x-0 gap-2 pt-4">
-              <Button asChild onClick={() => setWelcomeModalOpen(false)}>
-                <Link href={config?.exnovaUrl || '#'} target="_blank">
-                  Abrir a Corretora
+              <Button asChild className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black shadow-lg hover:to-yellow-600">
+                <Link href={config?.exnovaUrl || '#'} target="_blank" onClick={() => setWelcomeModalOpen(false)}>
+                  RESGATAR BÔNUS AGORA
                 </Link>
               </Button>
               <Button variant="outline" onClick={() => { setWelcomeModalOpen(false); setPlayerModalOpen(true);}}>
-                Instruções
+                Ver Instruções
               </Button>
           </DialogFooter>
         </DialogContent>
@@ -409,5 +410,3 @@ export default function FreePage() {
     </>
   );
 }
-
-    

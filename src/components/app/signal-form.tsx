@@ -26,7 +26,7 @@ import { Asset, ExpirationTime } from '@/app/analisador/page';
 import { useAppConfig } from '@/firebase';
 
 
-type VipStatus = 'PENDING' | 'AWAITING_DEPOSIT' | 'DEPOSIT_PENDING' | 'APPROVED' | 'REJECTED';
+type VipStatus = 'PENDING' | 'AWAITING_DEPOSIT' | 'DEPOSIT_PENDING' | 'APPROVED' | 'REJECTED' | 'PREMIUM';
 
 type FormData = {
   asset: Asset;
@@ -44,7 +44,7 @@ type SignalFormProps = {
   hasReachedLimit: boolean;
   user: User | null;
   firestore: Firestore;
-  isVip: boolean;
+  isPremium: boolean;
   vipStatus?: VipStatus;
   isVipModalOpen: boolean;
   setVipModalOpen: (isOpen: boolean) => void;
@@ -69,7 +69,7 @@ export function SignalForm({
   hasReachedLimit,
   user,
   firestore,
-  isVip,
+  isPremium,
   vipStatus,
   isVipModalOpen,
   setVipModalOpen,
@@ -88,18 +88,18 @@ export function SignalForm({
   const assets = showOTC ? allAssets : allAssets.filter(a => !a.includes('(OTC)'));
 
   useEffect(() => {
-    // Open the modal if the limit is reached, the user is not vip, and the status is not APPROVED
-    if (hasReachedLimit && !isVip) {
+    // Open the modal if the limit is reached, the user is not vip, and the status is not PREMIUM
+    if (hasReachedLimit && !isPremium) {
       setVipModalOpen(true);
     }
      // Also open modal if user becomes approved and hasn't seen the welcome message
-     if (vipStatus === 'APPROVED') {
+     if (vipStatus === 'PREMIUM') {
         const hasSeenWelcome = localStorage.getItem('hasSeenVipWelcome');
         if (!hasSeenWelcome) {
             setVipModalOpen(true);
         }
     }
-  }, [hasReachedLimit, isVip, vipStatus, setVipModalOpen]);
+  }, [hasReachedLimit, isPremium, vipStatus, setVipModalOpen]);
 
   useEffect(() => {
     // If OTC is turned off and an OTC asset is selected, reset to a default non-OTC asset
@@ -250,7 +250,7 @@ export function SignalForm({
     }
 
     switch (vipStatus) {
-      case 'APPROVED':
+      case 'PREMIUM':
         return (
              <>
             <DialogHeader>
@@ -598,18 +598,18 @@ export function SignalForm({
               )}
               {isLoading ? 'Analisando...' : !isMarketOpen ? 'Mercado Fechado' : hasReachedLimit ? 'Aguardando...' : 'Analisar Mercado'}
             </Button>
-            {!isVip && (
+            {!isPremium && (
               isFreeSignalPage ? (
                 <Button variant="link" className="w-full flex-col h-auto text-yellow-400 hover:text-yellow-300" asChild>
                   <Link href="/vip">
                     <Trophy className="h-5 w-5 mb-0.5" />
-                    SEJA VIP
+                    SEJA PREMIUM
                   </Link>
                 </Button>
               ) : (
                 <Button variant="link" className="w-full flex-col h-auto text-purple-400 hover:text-purple-300" onClick={() => setVipModalOpen(true)}>
                     <Crown className="h-5 w-5 mb-0.5" />
-                    SEJA VIP
+                    SEJA PREMIUM
                 </Button>
               )
             )}
@@ -624,3 +624,5 @@ export function SignalForm({
     </>
   );
 }
+
+    

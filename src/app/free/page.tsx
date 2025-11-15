@@ -70,6 +70,22 @@ export default function FreePage() {
     }
   }, []);
 
+  useEffect(() => {
+    const checkAndSetOTC = () => {
+      const isEurUsdOpen = isMarketOpenForAsset('EUR/USD');
+      const isEurJpyOpen = isMarketOpenForAsset('EUR/JPY');
+      if (!isEurUsdOpen && !isEurJpyOpen) {
+        setShowOTC(true);
+        setFormData(prev => ({ ...prev, asset: 'EUR/JPY (OTC)' }));
+      }
+    };
+    
+    checkAndSetOTC();
+    const interval = setInterval(checkAndSetOTC, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const handleToggleMarketMode = () => {
     setMarketModeActive(prev => {
         const newState = !prev;
@@ -282,7 +298,7 @@ export default function FreePage() {
                 hasReachedLimit={false}
                 user={null}
                 firestore={undefined as any}
-                isVip={false}
+                isPremium={false}
                 isVipModalOpen={false}
                 setVipModalOpen={() => {}}
                 isFreeSignalPage={true}
@@ -393,3 +409,5 @@ export default function FreePage() {
     </>
   );
 }
+
+    

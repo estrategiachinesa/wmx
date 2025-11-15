@@ -121,7 +121,7 @@ export default function AnalisadorPage() {
   }, [user, isUserLoading, auth]);
 
    useEffect(() => {
-    const isApproved = vipData && (vipData as any).status === 'APPROVED';
+    const isApproved = vipData && (vipData as any).status === 'PREMIUM';
     
     if (isApproved) {
       setIsPremium(true);
@@ -395,7 +395,7 @@ export default function AnalisadorPage() {
                 hasReachedLimit={hasReachedLimit}
                 user={user}
                 firestore={useFirebase().firestore}
-                isVip={isPremium}
+                isPremium={isPremium}
                 vipStatus={(vipData as any)?.status}
                 isVipModalOpen={isVipModalOpen}
                 setVipModalOpen={setVipModalOpen}
@@ -418,3 +418,5 @@ export default function AnalisadorPage() {
     </>
   );
 }
+
+    

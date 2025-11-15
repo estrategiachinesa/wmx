@@ -8,10 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Eye, EyeOff, ShieldAlert, KeyRound } from 'lucide-react';
+import { Loader2, Eye, EyeOff, ShieldAlert, KeyRound, Info } from 'lucide-react';
 import { useFirebase, useAppConfig } from '@/firebase';
-import { doc, getDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
 const USER_DOMAIN = 'estrategiachinesa.app';
 
@@ -29,6 +29,7 @@ export default function RegisterPage() {
   const [credentials, setCredentials] = useState({ user: '', password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isInfoModalOpen, setInfoModalOpen] = useState(true);
 
   const secret = params.secret as string;
 
@@ -125,80 +126,104 @@ export default function RegisterPage() {
   }
 
   return (
-    <Card className="w-full max-w-sm bg-background/50 backdrop-blur-sm border-border/50">
-      <CardHeader className="text-center">
-        <div className="flex justify-center items-center gap-2 mb-4">
-            <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
-              <KeyRound className="h-8 w-8 text-primary" />
-            </div>
-        </div>
-        <CardTitle className="font-headline text-3xl">Crie sua Conta</CardTitle>
-        <CardDescription>Defina suas credenciais de acesso para a Estratégia Chinesa.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="user">Usuário</Label>
-          <Input
-            id="user"
-            name="user"
-            type="text"
-            placeholder="Escolha seu nome de usuário"
-            value={credentials.user}
-            onChange={handleInputChange}
-            disabled={isLoading}
-          />
-        </div>
-        <div className="space-y-2 relative">
-          <Label htmlFor="password">Senha</Label>
-          <Input
-            id="password"
-            name="password"
-            type={showPassword ? 'text' : 'password'}
-            placeholder="Mínimo 6 caracteres"
-            value={credentials.password}
-            onChange={handleInputChange}
-            disabled={isLoading}
-            className="pr-10"
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute right-1 top-7 h-7 w-7 text-muted-foreground"
-            onClick={() => setShowPassword(prev => !prev)}
-          >
-            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </Button>
-        </div>
-        <div className="space-y-2 relative">
-          <Label htmlFor="confirmPassword">Confirmar Senha</Label>
-          <Input
-            id="confirmPassword"
-            name="confirmPassword"
-            type={showConfirmPassword ? 'text' : 'password'}
-            placeholder="Repita sua senha"
-            value={credentials.confirmPassword}
-            onChange={handleInputChange}
-            disabled={isLoading}
-            className="pr-10"
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            className="absolute right-1 top-7 h-7 w-7 text-muted-foreground"
-            onClick={() => setShowConfirmPassword(prev => !prev)}
-          >
-            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </Button>
-        </div>
-        <div className="pt-2">
-            <Button onClick={handleRegister} disabled={isLoading} className="w-full bg-primary/90 hover:bg-primary text-primary-foreground font-bold">
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                Criar Conta e Acessar
+    <>
+      <Dialog open={isInfoModalOpen} onOpenChange={setInfoModalOpen}>
+        <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Info className="text-primary" />
+                Atenção!
+              </DialogTitle>
+              <DialogDescription className="pt-2 text-base">
+                Para evitar problemas, seu nome de usuário deve ser a parte do seu e-mail que vem antes do "@".
+                <div className="mt-4 p-3 bg-muted rounded-md text-sm">
+                  <p className="font-semibold">Por exemplo:</p>
+                  <p>Se seu e-mail é <span className="font-bold text-primary">seunome@email.com</span></p>
+                  <p>Seu usuário deve ser: <span className="font-bold text-primary">seunome</span></p>
+                </div>
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button onClick={() => setInfoModalOpen(false)}>Entendi</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    
+      <Card className="w-full max-w-sm bg-background/50 backdrop-blur-sm border-border/50">
+        <CardHeader className="text-center">
+          <div className="flex justify-center items-center gap-2 mb-4">
+              <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
+                <KeyRound className="h-8 w-8 text-primary" />
+              </div>
+          </div>
+          <CardTitle className="font-headline text-3xl">Crie sua Conta</CardTitle>
+          <CardDescription>Defina suas credenciais de acesso para a Estratégia Chinesa.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="user">Usuário</Label>
+            <Input
+              id="user"
+              name="user"
+              type="text"
+              placeholder="Escolha seu nome de usuário"
+              value={credentials.user}
+              onChange={handleInputChange}
+              disabled={isLoading}
+            />
+          </div>
+          <div className="space-y-2 relative">
+            <Label htmlFor="password">Senha</Label>
+            <Input
+              id="password"
+              name="password"
+              type={showPassword ? 'text' : 'password'}
+              placeholder="Mínimo 6 caracteres"
+              value={credentials.password}
+              onChange={handleInputChange}
+              disabled={isLoading}
+              className="pr-10"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-7 h-7 w-7 text-muted-foreground"
+              onClick={() => setShowPassword(prev => !prev)}
+            >
+              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </Button>
-        </div>
-      </CardContent>
-    </Card>
+          </div>
+          <div className="space-y-2 relative">
+            <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+            <Input
+              id="confirmPassword"
+              name="confirmPassword"
+              type={showConfirmPassword ? 'text' : 'password'}
+              placeholder="Repita sua senha"
+              value={credentials.confirmPassword}
+              onChange={handleInputChange}
+              disabled={isLoading}
+              className="pr-10"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute right-1 top-7 h-7 w-7 text-muted-foreground"
+              onClick={() => setShowConfirmPassword(prev => !prev)}
+            >
+              {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </Button>
+          </div>
+          <div className="pt-2">
+              <Button onClick={handleRegister} disabled={isLoading} className="w-full bg-primary/90 hover:bg-primary text-primary-foreground font-bold">
+                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                  Criar Conta
+              </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </>
   );
 }

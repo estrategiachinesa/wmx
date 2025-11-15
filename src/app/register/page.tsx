@@ -1,8 +1,8 @@
 
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,19 +10,16 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { LineChart, Loader2, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { useFirebase, useAppConfig } from '@/firebase';
+import { useFirebase } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
-function RegisterForm() {
+export default function RegisterPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [credentials, setCredentials] = useState({ email: '', password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
   const { auth, isUserLoading, user } = useFirebase();
-  const { config, isConfigLoading } = useAppConfig();
-  const [isSecretValid, setIsSecretValid] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!isUserLoading && user) {
@@ -30,29 +27,12 @@ function RegisterForm() {
     }
   }, [user, isUserLoading, router]);
 
-  useEffect(() => {
-    if (!isConfigLoading && config) {
-      const secret = searchParams.get('secret');
-      if (secret === config.registrationSecret) {
-        setIsSecretValid(true);
-      } else {
-        setIsSecretValid(false);
-        toast({
-          variant: 'destructive',
-          title: 'Link de Cadastro Inválido',
-          description: 'O link que você usou para se registrar é inválido ou expirou.',
-        });
-        router.push('/');
-      }
-    }
-  }, [searchParams, config, isConfigLoading, toast, router]);
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setCredentials(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleRegister = async () => {
+  const handleRegister = useCallback(async () => {
     if (isLoading) return;
 
     if (!credentials.email || !credentials.password || !credentials.confirmPassword) {
@@ -89,18 +69,33 @@ function RegisterForm() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoading, credentials, auth, toast]);
 
-  if (isUserLoading || isConfigLoading || isSecretValid === null) {
+    useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        handleRegister();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [handleRegister]);
+
+  if (isUserLoading) {
       return (
           <div className="flex h-screen w-full items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin" />
-              <p className="ml-2">Verificando link...</p>
+              <p className="ml-2">Carregando...</p>
           </div>
       )
   }
   
-  if (user || !isSecretValid) {
+  if (user) {
       return null; // Redirects are handled in useEffect
   }
 
@@ -199,17 +194,4 @@ function RegisterForm() {
       </div>
     </>
   );
-}
-
-
-export default function RegisterPage() {
-  return (
-    <Suspense fallback={
-        <div className="flex h-screen w-full items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin" />
-        </div>
-    }>
-      <RegisterForm />
-    </Suspense>
-  )
 }

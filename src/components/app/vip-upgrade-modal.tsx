@@ -106,8 +106,7 @@ export function VipUpgradeModal({
         <Gift className="h-12 w-12 text-primary" />
         <DialogTitle className="text-2xl font-headline">Você ganhou $10.000 para treinar!</DialogTitle>
         <DialogDescription className="text-base text-center">
-          Para ter acesso aos sinais da Estratégia Chinesa e começar a operar, resgate seu bônus de treinamento agora.
-          Tenha acesso prioritário e ilimitado aos sinais, sem filas ou limites.
+          Para ter acesso a conta de treinamento e começar a operar com os sinais sem risco, resgate seu bônus de treinamento agora. Tenha acesso prioritário e ilimitado aos sinais, sem filas.
         </DialogDescription>
       </DialogHeader>
       <DialogFooter className="pt-4">

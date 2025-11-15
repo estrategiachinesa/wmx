@@ -14,7 +14,7 @@ export interface AppConfig {
   telegramUrl: string;
   hourlySignalLimit: number;
   correlationChance: number;
-  registrationSecret: string;
+  secretKey: string;
 }
 
 // Define the state for the config context
@@ -45,7 +45,7 @@ const defaultRemoteValuesConfig = {
 };
 
 const defaultRegistrationConfig = {
-    registrationSecret: "changeme"
+    secretKey: "changeme"
 };
 
 
@@ -126,7 +126,7 @@ needsWrite = true;
 
         // Process Registration Secret
         if (registrationSnap.exists()) {
-            mergedConfig = { ...mergedConfig, secretKey: registrationSnap.data().secretKey };
+            mergedConfig = { ...mergedConfig, ...registrationSnap.data() };
         } else {
             console.warn("Registration config document not found. Creating it with defaults.");
             batch.set(registrationRef, defaultRegistrationConfig);

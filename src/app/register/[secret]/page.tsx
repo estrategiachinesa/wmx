@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Eye, EyeOff, ShieldAlert, KeyRound } from 'lucide-react';
-import { useFirebase } from '@/firebase';
+import { useFirebase, useAppConfig } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 
@@ -21,7 +21,8 @@ export default function RegisterPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
-  const { firestore, auth } = useFirebase();
+  const { auth } = useFirebase();
+  const { config, isConfigLoading } = useAppConfig();
 
   const [pageState, setPageState] = useState<PageState>('validating');
   const [isLoading, setIsLoading] = useState(false);
@@ -32,30 +33,14 @@ export default function RegisterPage() {
   const secret = params.secret as string;
 
   useEffect(() => {
-    if (!secret || !firestore) return;
+    if (isConfigLoading || !config) return;
 
-    const validateSecret = async () => {
-      const configRef = doc(firestore, 'appConfig', 'registration');
-      try {
-        const configSnap = await getDoc(configRef);
-        if (configSnap.exists() && configSnap.data().secretKey === secret) {
-          setPageState('valid');
-        } else {
-          setPageState('invalid');
-        }
-      } catch (error) {
-        console.error("Error validating secret:", error);
-        setPageState('invalid');
-        toast({
-          variant: 'destructive',
-          title: 'Erro de Validação',
-          description: 'Não foi possível verificar o link de registro. Tente novamente mais tarde.',
-        });
-      }
-    };
-
-    validateSecret();
-  }, [secret, firestore, toast]);
+    if (config.secretKey === secret) {
+      setPageState('valid');
+    } else {
+      setPageState('invalid');
+    }
+  }, [secret, config, isConfigLoading]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -109,7 +94,7 @@ export default function RegisterPage() {
     }
   };
 
-  if (pageState === 'validating') {
+  if (pageState === 'validating' || isConfigLoading) {
     return (
       <div className="flex flex-col items-center justify-center text-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />

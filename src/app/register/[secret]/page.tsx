@@ -1,14 +1,14 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { LineChart, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Eye, EyeOff, KeyRound } from 'lucide-react';
 import Link from 'next/link';
 import { useFirebase, useAppConfig } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
@@ -17,92 +17,99 @@ export default function RegisterPage() {
   const router = useRouter();
   const params = useParams();
   const { toast } = useToast();
+  const { auth } = useFirebase();
+  const { config, isConfigLoading } = useAppConfig();
+  
   const [isLoading, setIsLoading] = useState(false);
+  const [isSecretValid, setSecretValid] = useState<boolean | null>(null);
   const [credentials, setCredentials] = useState({ email: '', password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
-  const { auth, isUserLoading, user } = useFirebase();
-  const { config, isConfigLoading } = useAppConfig();
-  const [isSecretValid, setIsSecretValid] = useState<boolean | null>(null);
 
-  const secret = params.secret;
+  const secret = typeof params.secret === 'string' ? params.secret : null;
 
   useEffect(() => {
-    if (!isUserLoading && user) {
-        router.push('/analisador');
+    if (isConfigLoading) {
+      setSecretValid(null); // Loading state
+      return;
     }
-  }, [user, isUserLoading, router]);
+    if (config && secret) {
+      setSecretValid(secret === config.registrationSecret);
+    } else {
+      setSecretValid(false);
+    }
+  }, [secret, config, isConfigLoading]);
 
-  useEffect(() => {
-    if (!isConfigLoading && config) {
-      if (secret === config.registrationSecret) {
-        setIsSecretValid(true);
-      } else {
-        setIsSecretValid(false);
-        toast({
-          variant: 'destructive',
-          title: 'Link de Cadastro Inválido',
-          description: 'O link que você usou para se registrar é inválido ou expirou.',
-        });
-        router.push('/');
-      }
-    }
-  }, [secret, config, isConfigLoading, toast, router]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setCredentials(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleRegister = async () => {
+  const handleRegister = useCallback(async () => {
     if (isLoading) return;
+    setIsLoading(true);
 
     if (!credentials.email || !credentials.password || !credentials.confirmPassword) {
-        toast({ variant: 'destructive', title: 'Campos Vazios', description: 'Por favor, preencha todos os campos.' });
-        return;
+      toast({ variant: 'destructive', title: 'Campos Vazios', description: 'Por favor, preencha todos os campos.' });
+      setIsLoading(false);
+      return;
     }
+
     if (credentials.password !== credentials.confirmPassword) {
-        toast({ variant: 'destructive', title: 'Senhas não coincidem', description: 'A senha e a confirmação de senha devem ser iguais.' });
-        return;
+      toast({ variant: 'destructive', title: 'Senhas não coincidem', description: 'Por favor, verifique sua senha.' });
+      setIsLoading(false);
+      return;
     }
+
     if (credentials.password.length < 6) {
         toast({ variant: 'destructive', title: 'Senha muito curta', description: 'A senha deve ter no mínimo 6 caracteres.' });
+        setIsLoading(false);
         return;
     }
 
-    setIsLoading(true);
     try {
-        await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
-        localStorage.setItem('loginTimestamp', Date.now().toString());
-        toast({
-          title: 'Cadastro bem-sucedido!',
-          description: 'Redirecionando para o analisador...',
-        });
-        // The useEffect hook will handle the redirect
+      await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
+      toast({
+          title: 'Cadastro realizado com sucesso!',
+          description: 'Redirecionando para a página de login...'
+      });
+      router.push('/');
     } catch (error: any) {
-      console.error("Registration error:", error);
       let description = 'Ocorreu um erro inesperado.';
       if (error.code === 'auth/email-already-in-use') {
-          description = 'Este e-mail já está em uso. Tente fazer login.';
+        description = 'Este e-mail já está em uso. Tente fazer login.';
       } else if (error.code === 'auth/invalid-email') {
-          description = 'O formato do e-mail é inválido.';
+        description = 'O formato do e-mail é inválido.';
       }
       toast({ variant: 'destructive', title: 'Falha no Cadastro', description });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoading, credentials, auth, toast, router]);
 
-  if (isUserLoading || isConfigLoading || isSecretValid === null) {
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        handleRegister();
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [handleRegister]);
+
+  if (isSecretValid === null) {
       return (
           <div className="flex h-screen w-full items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin" />
-              <p className="ml-2">Verificando link...</p>
+              <p className="ml-2">Verificando link de acesso...</p>
           </div>
       )
   }
   
-  if (user || !isSecretValid) {
-      return null; // Redirects are handled in useEffect
+  if(isSecretValid === false) {
+      router.replace('/blocked');
+      return null;
   }
 
   return (
@@ -116,11 +123,11 @@ export default function RegisterPage() {
           <CardHeader className="text-center">
             <div className="flex justify-center items-center gap-2 mb-4">
                <div className="p-3 bg-primary/10 rounded-full border border-primary/20">
-                  <LineChart className="h-8 w-8 text-primary" />
+                  <KeyRound className="h-8 w-8 text-primary" />
                </div>
             </div>
-            <CardTitle className="font-headline text-3xl">Criar Conta</CardTitle>
-            <CardDescription>Crie sua conta para acessar a Estratégia Chinesa.</CardDescription>
+            <CardTitle className="font-headline text-3xl">Crie sua Conta</CardTitle>
+            <CardDescription>Insira seus dados para se registrar.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -170,29 +177,30 @@ export default function RegisterPage() {
               />
             </div>
             <div className="space-y-2 pt-2">
-              <Button onClick={handleRegister} disabled={isLoading} className="w-full bg-primary/90 hover:bg-primary text-primary-foreground font-bold">
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Criar Conta
-              </Button>
+                <Button onClick={handleRegister} disabled={isLoading} className="w-full bg-primary/90 hover:bg-primary text-primary-foreground font-bold">
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    Registrar
+                </Button>
             </div>
 
-            <div className="relative my-4">
+            <div className="relative my-2">
                 <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-background px-2 text-muted-foreground">
-                    Já tem uma conta?
+                    ou
                     </span>
                 </div>
             </div>
 
              <div className="text-center">
-                 <Button variant="outline" asChild>
-                    <Link href="/">
-                      Fazer Login
-                    </Link>
-                 </Button>
+                <p className="text-sm text-muted-foreground">
+                  Já tem uma conta?{' '}
+                  <Link href="/" className="font-semibold text-primary underline-offset-4 hover:underline">
+                    Faça Login
+                  </Link>
+                </p>
             </div>
 
           </CardContent>

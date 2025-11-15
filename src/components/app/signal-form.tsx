@@ -254,7 +254,7 @@ export function SignalForm({
         return (
              <>
             <DialogHeader>
-              <DialogTitle className="text-2xl font-headline text-primary">🎉 Parabéns! Acesso VIP Liberado!</DialogTitle>
+              <DialogTitle className="text-2xl font-headline text-primary">🎉 Parabéns! Acesso PREMIUM Liberado!</DialogTitle>
               <DialogDescription>
                 Você agora tem acesso prioritário e ilimitado a todos os sinais. Toque em "Começar" e aproveite ao máximo!
               </DialogDescription>

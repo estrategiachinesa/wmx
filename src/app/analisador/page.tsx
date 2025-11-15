@@ -68,7 +68,7 @@ export default function AnalisadorPage() {
   const [isMarketOpen, setIsMarketOpen] = useState(true);
   const [signalUsage, setSignalUsage] = useState<SignalUsage>({ timestamps: [] });
   const [hasReachedLimit, setHasReachedLimit] = useState(false);
-  const [isVip, setIsVip] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const [isVipModalOpen, setVipModalOpen] = useState(false);
   const { toast } = useToast();
   
@@ -124,7 +124,7 @@ export default function AnalisadorPage() {
     const isApproved = vipData && (vipData as any).status === 'APPROVED';
     
     if (isApproved) {
-      setIsVip(true);
+      setIsPremium(true);
       document.documentElement.classList.add('theme-premium');
 
       const hasSeenWelcome = localStorage.getItem('hasSeenVipWelcome');
@@ -132,7 +132,7 @@ export default function AnalisadorPage() {
         setVipModalOpen(true);
       }
     } else {
-      setIsVip(false);
+      setIsPremium(false);
       document.documentElement.classList.remove('theme-premium');
     }
      return () => {
@@ -142,7 +142,7 @@ export default function AnalisadorPage() {
 
   // Effect for checking and updating signal usage limit
   useEffect(() => {
-    if (isVip || !usageStorageKey || !config) {
+    if (isPremium || !usageStorageKey || !config) {
       setHasReachedLimit(false);
       return;
     }
@@ -164,7 +164,7 @@ export default function AnalisadorPage() {
       setHasReachedLimit(recentTimestamps.length >= config.hourlySignalLimit);
 
     }
-  }, [appState, isVip, usageStorageKey, config]);
+  }, [appState, isPremium, usageStorageKey, config]);
 
 
   useEffect(() => {
@@ -245,7 +245,7 @@ export default function AnalisadorPage() {
         });
         return;
     }
-    if (!isVip && usageStorageKey) {
+    if (!isPremium && usageStorageKey) {
       const usageString = localStorage.getItem(usageStorageKey) || '{ "timestamps": [] }';
       const currentUsage: SignalUsage = JSON.parse(usageString);
       const oneHourAgo = Date.now() - 60 * 60 * 1000;
@@ -284,7 +284,7 @@ export default function AnalisadorPage() {
       
       setSignalData(newSignalData);
 
-      if (!isVip && usageStorageKey) {
+      if (!isPremium && usageStorageKey) {
         // Update usage stats
         const usageString = localStorage.getItem(usageStorageKey) || '{ "timestamps": [] }';
         const currentUsage: SignalUsage = JSON.parse(usageString);
@@ -363,7 +363,7 @@ export default function AnalisadorPage() {
         <header className="p-4 flex justify-between items-center">
           <div className='flex items-center gap-4'>
             <div className="px-3 py-1 text-sm font-bold bg-primary text-primary-foreground rounded-full shadow-lg">
-              {isVip ? 'VIP' : 'MEMBRO'}
+              {isPremium ? 'PREMIUM' : 'VIP'}
             </div>
           </div>
            <button
@@ -395,7 +395,7 @@ export default function AnalisadorPage() {
                 hasReachedLimit={hasReachedLimit}
                 user={user}
                 firestore={useFirebase().firestore}
-                isVip={isVip}
+                isVip={isPremium}
                 vipStatus={(vipData as any)?.status}
                 isVipModalOpen={isVipModalOpen}
                 setVipModalOpen={setVipModalOpen}

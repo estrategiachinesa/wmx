@@ -12,6 +12,7 @@ import { LineChart, Loader2, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useFirebase } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -19,6 +20,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [credentials, setCredentials] = useState({ email: '', password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
+  const [isWelcomeModalOpen, setWelcomeModalOpen] = useState(true);
   const { auth, isUserLoading, user } = useFirebase();
 
   useEffect(() => {
@@ -192,6 +194,22 @@ export default function RegisterPage() {
           </CardContent>
         </Card>
       </div>
+
+       <Dialog open={isWelcomeModalOpen} onOpenChange={setWelcomeModalOpen}>
+        <DialogContent>
+          <DialogHeader className="text-center items-center">
+            <DialogTitle className="text-2xl font-headline">Seja Bem-vindo!</DialogTitle>
+            <DialogDescription className="text-base">
+              Ao criar sua conta, você poderá adquirir uma licença para ter acesso ilimitado aos sinais da Estratégia Chinesa.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="pt-4">
+              <Button className="w-full" onClick={() => setWelcomeModalOpen(false)}>
+                Entendido
+              </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

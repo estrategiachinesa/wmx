@@ -73,9 +73,9 @@ export default function RegisterPage() {
       await createUserWithEmailAndPassword(auth, email, credentials.password);
       toast({
         title: 'Conta Criada com Sucesso!',
-        description: 'Bem-vindo(a)! Redirecionando para o analisador...',
+        description: 'Parabéns! Por favor, faça o login com suas novas credenciais.',
       });
-      router.push('/analisador');
+      router.push('/');
     } catch (error: any) {
       console.error("Registration error:", error);
       let description = 'Ocorreu um erro inesperado ao criar sua conta.';

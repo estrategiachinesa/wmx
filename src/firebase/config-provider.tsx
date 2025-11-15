@@ -58,103 +58,12 @@ const defaultConfig: AppConfig = {
 
 // Create the provider component
 export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const firestore = useFirestore();
-
+  // For a static build, we won't fetch from Firestore. We'll use the defaults.
   const [configState, setConfigState] = useState<ConfigContextState>({
-    config: null,
-    isConfigLoading: true,
+    config: defaultConfig,
+    isConfigLoading: false, // Set to false as we are not loading anything.
     configError: null,
   });
-
-  useEffect(() => {
-    if (!firestore) {
-      // This case might happen during server-side rendering or if Firebase initialization fails.
-      // We provide the hardcoded defaults.
-      setConfigState({
-        config: defaultConfig,
-        isConfigLoading: false,
-        configError: new Error("Firestore is not available."),
-      });
-      return;
-    }
-
-    const fetchConfig = async () => {
-      const linksRef = doc(firestore, 'appConfig', 'links');
-      const limitationRef = doc(firestore, 'appConfig', 'limitation');
-      const remoteValuesRef = doc(firestore, 'appConfig', 'remoteValues');
-      const registrationRef = doc(firestore, 'appConfig', 'registration');
-
-
-      try {
-        const [linksSnap, limitationSnap, remoteValuesSnap, registrationSnap] = await Promise.all([
-            getDoc(linksRef),
-            getDoc(limitationRef),
-            getDoc(remoteValuesRef),
-            getDoc(registrationRef),
-        ]);
-        
-        let mergedConfig = {...defaultConfig};
-        const batch = writeBatch(firestore);
-        let needsWrite = false;
-
-        // Process Links
-        if (linksSnap.exists()) {
-          mergedConfig = { ...mergedConfig, ...linksSnap.data() };
-        } else {
-          console.warn("Links config document not found. Creating it with defaults.");
-          batch.set(linksRef, defaultLinkConfig);
-          needsWrite = true;
-        }
-
-        // Process Limitation
-        if (limitationSnap.exists()) {
-          mergedConfig = { ...mergedConfig, ...limitationSnap.data() };
-        } else {
-          console.warn("Limitation config document not found. Creating it with defaults.");
-          batch.set(limitationRef, defaultLimitConfig);
-          needsWrite = true;
-        }
-        
-        // Process Remote Values
-        if (remoteValuesSnap.exists()) {
-            mergedConfig = { ...mergedConfig, ...remoteValuesSnap.data() };
-        } else {
-            console.warn("Remote values config document not found. Creating it with defaults.");
-            batch.set(remoteValuesRef, defaultRemoteValuesConfig);
-needsWrite = true;
-        }
-
-        // Process Registration Secret
-        if (registrationSnap.exists()) {
-            mergedConfig = { ...mergedConfig, ...registrationSnap.data() };
-        } else {
-            console.warn("Registration config document not found. Creating it with defaults.");
-            batch.set(registrationRef, defaultRegistrationConfig);
-            needsWrite = true;
-        }
-
-        if (needsWrite) {
-          await batch.commit();
-        }
-
-        setConfigState({
-          config: mergedConfig,
-          isConfigLoading: false,
-          configError: null,
-        });
-
-      } catch (error) {
-        console.error("Error fetching or creating remote config, using defaults:", error);
-        setConfigState({
-          config: defaultConfig,
-          isConfigLoading: false,
-          configError: error instanceof Error ? error : new Error('Failed to fetch config'),
-        });
-      }
-    };
-
-    fetchConfig();
-  }, [firestore]);
 
   return (
     <ConfigContext.Provider value={configState}>

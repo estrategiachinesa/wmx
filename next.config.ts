@@ -2,7 +2,7 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   output: 'export',
-  basePath: '/la',
+  basePath: '/ia',
   typescript: {
     ignoreBuildErrors: true,
   },

@@ -420,7 +420,7 @@ export function SignalForm({
         )
       default: // No status or limit reached
         return (
-          <>
+          <div className="theme-premium">
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline text-primary">Torne-se PREMIUM</DialogTitle>
               <DialogDescription>
@@ -432,7 +432,7 @@ export function SignalForm({
                  <p className="text-sm text-muted-foreground">
                   Cadastre-se na corretora pelo nosso link para se tornar PREMIUM, resgatar seu bônus, evitar a fila de espera e ter sinais ilimitados.
                 </p>
-                <Button className="w-full" asChild variant="secondary">
+                <Button className="w-full" asChild>
                   <Link href={config.exnovaUrl} target="_blank">
                     Cadastrar na Corretora
                   </Link>
@@ -455,11 +455,11 @@ export function SignalForm({
 
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setVipModalOpen(false)}>
+              <Button variant="ghost" onClick={() => setVipModalOpen(false)}>
                 Resgatar Depois
               </Button>
             </DialogFooter>
-          </>
+          </div>
         );
     }
   }

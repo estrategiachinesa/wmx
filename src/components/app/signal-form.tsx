@@ -96,7 +96,7 @@ export function SignalForm({
       setVipModalOpen(true);
     }
      // Also open modal if user becomes approved and hasn't seen the welcome message
-     if (vipStatus === 'PREMIUM') {
+     if (vipStatus === 'PREMIUM' || vipStatus === 'APPROVED') {
         const hasSeenWelcome = localStorage.getItem('hasSeenVipWelcome');
         if (!hasSeenWelcome) {
             setVipModalOpen(true);
@@ -154,7 +154,7 @@ export function SignalForm({
       toast({
         variant: 'destructive',
         title: 'ID Inválido',
-        description: 'O ID da corretora deve conter apenas números e ter no mínimo 8 dígitos.',
+        description: 'O ID da corretora deve conter apenas números.',
       });
       return;
     }
@@ -254,6 +254,7 @@ export function SignalForm({
 
     switch (vipStatus) {
       case 'PREMIUM':
+      case 'APPROVED':
         return (
              <>
             <DialogHeader>
@@ -402,7 +403,6 @@ export function SignalForm({
                     value={brokerId}
                     onChange={(e) => setBrokerId(e.target.value.replace(/\D/g, ''))}
                     pattern="[0-9]*"
-                    minLength={8}
                     disabled={isSubmittingId}
                   />
                   <Button type="submit" size="icon" onClick={handleIdSubmit} disabled={isSubmittingId || brokerId.length < 8}>
@@ -444,7 +444,6 @@ export function SignalForm({
                     value={brokerId}
                     onChange={(e) => setBrokerId(e.target.value.replace(/\D/g, ''))}
                     pattern="[0-9]*"
-                    minLength={8}
                     disabled={isSubmittingId}
                   />
                   <Button type="submit" size="icon" onClick={handleIdSubmit} disabled={isSubmittingId || brokerId.length < 8}>

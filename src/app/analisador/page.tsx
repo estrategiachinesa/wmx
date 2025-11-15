@@ -123,9 +123,9 @@ export default function AnalisadorPage() {
   }, [user, isUserLoading, auth]);
 
    useEffect(() => {
-    const isApproved = vipData && (vipData as any).status === 'PREMIUM';
+    const isPremiumUser = vipData && ['PREMIUM', 'APPROVED'].includes((vipData as any).status);
     
-    if (isApproved) {
+    if (isPremiumUser) {
       setIsPremium(true);
       document.documentElement.classList.add('theme-premium');
 
@@ -146,7 +146,7 @@ export default function AnalisadorPage() {
   useEffect(() => {
     if (user && !isUserLoading) { // Ensure user is loaded
         const shouldShow = localStorage.getItem('showPremiumUpgradeOnLoad');
-        const isPremiumUser = vipData && (vipData as any).status === 'PREMIUM';
+        const isPremiumUser = vipData && ['PREMIUM', 'APPROVED'].includes((vipData as any).status);
         
         if (shouldShow === 'true' && !isPremiumUser) {
             setUpgradeModalOpen(true);

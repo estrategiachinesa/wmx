@@ -51,6 +51,7 @@ type SignalFormProps = {
   setUpgradeModalOpen: (isOpen: boolean) => void;
   rejectedBrokerId?: string;
   isFreeSignalPage?: boolean;
+  setBonusModalOpen?: (isOpen: boolean) => void;
 };
 
 const allAssets: Asset[] = [

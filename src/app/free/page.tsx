@@ -21,8 +21,6 @@ import { OnlineServer } from '@/components/app/OnlineServer';
 import { Asset, ExpirationTime } from '@/app/analisador/page';
 import { useAppConfig } from '@/firebase';
 import { generateSignal as generateClientSideSignal } from '@/lib/signal-generator';
-import { BonusModal } from '@/components/app/bonus-modal';
-
 
 export type SignalData = {
   asset: Asset;
@@ -302,7 +300,7 @@ export default function FreePage() {
                 isPremium={false}
                 isVipModalOpen={false}
                 setVipModalOpen={() => {}}
-                setBonusModalOpen={() => {}}
+                setUpgradeModalOpen={() => {}}
                 isFreeSignalPage={true}
               />
             ) : (
@@ -350,15 +348,29 @@ export default function FreePage() {
         </DialogContent>
       </Dialog>
       
-      <BonusModal 
-        isOpen={isWelcomeModalOpen} 
-        onOpenChange={setWelcomeModalOpen}
-        onShowInstructions={() => {
-            setWelcomeModalOpen(false);
-            setPlayerModalOpen(true);
-        }}
-      />
-
+      <Dialog open={isWelcomeModalOpen} onOpenChange={setWelcomeModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Bem-vindo à Demonstração!</DialogTitle>
+            <DialogDescription>
+              Para ter acesso aos sinais da Estratégia Chinesa e começar a operar no mercado real, siga os passos abaixo.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-col sm:space-x-0 gap-2">
+              <Button onClick={() => {
+                setWelcomeModalOpen(false);
+                setPlayerModalOpen(true);
+              }}>
+                Ver Instruções
+              </Button>
+              <Button asChild variant="secondary">
+                <Link href={config?.exnovaUrl || '#'} target="_blank" onClick={() => setWelcomeModalOpen(false)}>
+                  Ir para a Corretora
+                </Link>
+              </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isPlayerModalOpen} onOpenChange={setPlayerModalOpen}>
         <DialogContent className="max-w-3xl aspect-video p-0 border-0">

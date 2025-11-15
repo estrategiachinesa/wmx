@@ -286,7 +286,7 @@ export function SignalForm({
             <DialogHeader>
               <DialogTitle className="text-2xl font-headline text-primary">🎉 Cadastro Verificado!</DialogTitle>
               <DialogDescription>
-                Falta apenas um passo para o Acesso VIP! Faça seu primeiro depósito na corretora para ativar o acesso ilimitado.
+                Falta apenas um passo para o Acesso PREMIUM! Faça seu primeiro depósito de qualquer valor na corretora para ativar o modo prioritário.
               </DialogDescription>
             </DialogHeader>
             <div className="py-4 space-y-4">

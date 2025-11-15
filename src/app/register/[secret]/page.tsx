@@ -35,7 +35,7 @@ export default function RegisterPage() {
   useEffect(() => {
     if (isConfigLoading || !config) return;
 
-    if (config.secretKey === secret) {
+    if (config.registrationSecret === secret) {
       setPageState('valid');
     } else {
       setPageState('invalid');

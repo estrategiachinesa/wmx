@@ -56,13 +56,13 @@
       "type": "object",
       "description": "Stores the secret key for user registration.",
       "properties": {
-        "secretKey": {
+        "registrationSecret": {
           "type": "string",
           "description": "A secret key used in the registration URL to grant access to the signup page."
         }
       },
       "required": [
-        "secretKey"
+        "registrationSecret"
       ]
     },
     "VipRequest": {

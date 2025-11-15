@@ -14,7 +14,7 @@ export interface AppConfig {
   telegramUrl: string;
   hourlySignalLimit: number;
   correlationChance: number;
-  secretKey: string;
+  registrationSecret: string;
 }
 
 // Define the state for the config context
@@ -45,7 +45,7 @@ const defaultRemoteValuesConfig = {
 };
 
 const defaultRegistrationConfig = {
-    secretKey: "changeme"
+    registrationSecret: "changeme"
 };
 
 

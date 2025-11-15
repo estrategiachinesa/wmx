@@ -185,7 +185,7 @@ export default function LoginPage() {
              <div className="text-center">
                 <p className="text-sm text-muted-foreground">
                   Não tem uma licença?{' '}
-                  <Link href="/vendas" className="font-semibold text-primary underline-offset-4 hover:underline">
+                  <Link href="/vip" className="font-semibold text-primary underline-offset-4 hover:underline">
                     Clique aqui
                   </Link>
                 </p>

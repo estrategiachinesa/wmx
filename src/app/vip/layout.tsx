@@ -2,11 +2,11 @@ import { cn } from '@/lib/utils';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Oferta Especial - Estratégia Chinesa',
+  title: 'Oferta VIP - Estratégia Chinesa',
   description: 'Desbloqueie seu acesso ilimitado à Estratégia Chinesa.',
 };
 
-export default function VendasLayout({
+export default function VipLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

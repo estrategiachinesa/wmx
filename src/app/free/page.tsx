@@ -319,7 +319,7 @@ export default function FreePage() {
           </DialogHeader>
           <DialogFooter className="flex-col sm:flex-col sm:space-x-0 gap-2">
               <Button asChild>
-                <Link href="/vendas">
+                <Link href="/vip">
                   Adquirir uma Licença
                 </Link>
               </Button>
@@ -383,7 +383,7 @@ export default function FreePage() {
                 Fechar
             </Button>
             <Button asChild>
-                <Link href="/vendas">
+                <Link href="/vip">
                     Quero o Indicador
                 </Link>
             </Button>

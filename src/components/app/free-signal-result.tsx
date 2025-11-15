@@ -81,7 +81,7 @@ export function FreeSignalResult({ data, onReset, isMarketMode, isSignalFinished
         <div className="pt-4 space-y-2">
           <p className="text-sm text-primary font-semibold">Revele este sinal e tenha acesso ILIMITADO!</p>
           <Button asChild className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-bold hover:to-yellow-600 shadow-lg">
-            <Link href="/vendas">
+            <Link href="/vip">
               Adquirir Licença VIP
             </Link>
           </Button>

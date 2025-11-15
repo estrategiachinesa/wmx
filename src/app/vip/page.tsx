@@ -10,38 +10,38 @@ import Link from 'next/link';
 const Feature = ({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) => (
   <div className="flex items-start gap-4">
     <div className="bg-primary/10 text-primary p-2 rounded-full">
-      <Icon className="h-6 w-6" />
+      <Icon className="h-5 w-5" />
     </div>
     <div>
-      <h3 className="font-bold text-lg text-foreground">{title}</h3>
-      <p className="text-muted-foreground">{description}</p>
+      <h3 className="font-bold text-base md:text-lg text-foreground">{title}</h3>
+      <p className="text-sm text-muted-foreground">{description}</p>
     </div>
   </div>
 );
 
-export default function SalesPage() {
+export default function VipPage() {
   const { config, isConfigLoading } = useAppConfig();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 md:p-8">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
       <main className="w-full max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-yellow-400 font-headline">
+        <div className="text-center mb-8 md:mb-10">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-yellow-400 font-headline">
             Domine o Mercado com a Inteligência Artificial
           </h1>
-          <p className="mt-4 text-lg md:text-xl text-foreground/80 max-w-2xl mx-auto">
+          <p className="mt-4 text-base md:text-lg text-foreground/80 max-w-2xl mx-auto">
             Você está a um passo de desbloquear o acesso ilimitado à ferramenta que está revolucionando o mercado de opções binárias.
           </p>
         </div>
 
         <Card className="bg-background/50 backdrop-blur-sm border-border/50 shadow-2xl shadow-primary/10">
-          <CardHeader className="text-center p-8 border-b border-border/20">
-            <h2 className="text-3xl font-bold text-primary">Acesso VIP Vitalício</h2>
-            <p className="text-muted-foreground mt-2">Um único pagamento para acesso para sempre. Sem mensalidades.</p>
+          <CardHeader className="text-center p-6 md:p-8 border-b border-border/20">
+            <h2 className="text-2xl md:text-3xl font-bold text-primary">Acesso VIP Vitalício</h2>
+            <p className="text-sm md:text-base text-muted-foreground mt-2">Um único pagamento para acesso para sempre. Sem mensalidades.</p>
           </CardHeader>
-          <CardContent className="p-8 grid md:grid-cols-2 gap-8">
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-foreground mb-4">O que você vai receber:</h3>
+          <CardContent className="p-6 md:p-8 grid md:grid-cols-2 gap-6 md:gap-8">
+            <div className="space-y-5">
+              <h3 className="text-lg md:text-xl font-bold text-foreground mb-4">O que você vai receber:</h3>
               <Feature
                 icon={Clock}
                 title="Análise 24/7"
@@ -75,14 +75,14 @@ export default function SalesPage() {
             </div>
 
             <div className="bg-card/50 p-6 rounded-lg border border-border flex flex-col justify-center text-center">
-              <p className="text-sm text-muted-foreground">OFERTA ESPECIAL POR TEMPO LIMITADO</p>
-              <p className="text-5xl font-bold text-foreground my-2">R$ 197</p>
-              <p className="text-muted-foreground">Pagamento único, acesso vitalício.</p>
+              <p className="text-xs md:text-sm text-muted-foreground">OFERTA ESPECIAL POR TEMPO LIMITADO</p>
+              <p className="text-4xl md:text-5xl font-bold text-foreground my-2">R$ 197</p>
+              <p className="text-sm md:text-base text-muted-foreground">Pagamento único, acesso vitalício.</p>
 
               <Button
                 asChild
                 size="lg"
-                className="w-full mt-6 h-14 text-lg font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 text-black hover:to-yellow-600 shadow-lg shadow-yellow-500/20 transform hover:scale-105 transition-all duration-300"
+                className="w-full mt-6 h-12 md:h-14 text-base md:text-lg font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 text-black hover:to-yellow-600 shadow-lg shadow-yellow-500/20 transform hover:scale-105 transition-all duration-300"
                 disabled={isConfigLoading}
               >
                 <Link href={config?.hotmartUrl || '#'} target="_blank">
@@ -90,7 +90,7 @@ export default function SalesPage() {
                   QUERO ACESSO VIP AGORA
                 </Link>
               </Button>
-              <div className="flex items-center justify-center gap-2 mt-4 text-sm text-muted-foreground">
+              <div className="flex items-center justify-center gap-2 mt-4 text-xs text-muted-foreground">
                 <ShieldCheck className="h-4 w-4 text-success" />
                 <span>Compra segura e garantida pela Hotmart.</span>
               </div>

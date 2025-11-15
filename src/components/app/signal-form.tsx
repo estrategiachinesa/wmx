@@ -429,7 +429,7 @@ export function SignalForm({
             </DialogHeader>
             <div className="space-y-4 py-4">
               <Button className="w-full h-12 text-base" asChild>
-                  <Link href="/vendas">
+                  <Link href="/vip">
                     <Crown className="mr-2" /> Quero o Acesso VIP (Via Pagamento)
                   </Link>
               </Button>
@@ -601,7 +601,7 @@ export function SignalForm({
             {!isVip && (
               isFreeSignalPage ? (
                 <Button variant="link" className="w-full flex-col h-auto text-yellow-400 hover:text-yellow-300" asChild>
-                  <Link href="/vendas">
+                  <Link href="/vip">
                     <Trophy className="h-5 w-5 mb-0.5" />
                     SEJA VIP
                   </Link>

@@ -4,7 +4,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useAppConfig } from '@/firebase';
-import { Check, ShieldCheck, Zap, BarChart, Clock, Users, Gift, Timer } from 'lucide-react';
+import { Check, ShieldCheck, Zap, BarChart, Clock, Users, Gift, Timer, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 
 const Feature = ({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) => (
@@ -23,8 +23,16 @@ export default function VipPage() {
   const { config, isConfigLoading } = useAppConfig();
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 md:p-8">
-      <main className="w-full max-w-4xl mx-auto">
+    <div className="flex flex-col items-center justify-center min-h-screen">
+       <header className="p-4 w-full max-w-4xl mx-auto flex justify-start items-center">
+          <Button variant="ghost" asChild>
+            <Link href="/">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Voltar
+            </Link>
+          </Button>
+        </header>
+      <main className="w-full max-w-4xl mx-auto px-4 sm:px-6 md:px-8 flex-grow">
         <div className="text-center mb-8 md:mb-10">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-yellow-400 font-headline">
             Domine o Mercado com a Inteligência Artificial

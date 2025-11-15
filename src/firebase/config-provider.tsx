@@ -15,6 +15,7 @@ export interface AppConfig {
   hourlySignalLimit: number;
   correlationChance: number;
   registrationSecret: string;
+  price: string;
 }
 
 // Define the state for the config context
@@ -48,12 +49,16 @@ const defaultRegistrationConfig = {
     registrationSecret: "changeme"
 };
 
+const defaultOfferConfig = {
+    price: "R$ 197"
+};
 
 const defaultConfig: AppConfig = {
     ...defaultLinkConfig,
     ...defaultLimitConfig,
     ...defaultRemoteValuesConfig,
-    ...defaultRegistrationConfig
+    ...defaultRegistrationConfig,
+    ...defaultOfferConfig,
 };
 
 // Create the provider component
@@ -77,13 +82,15 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           limitation: doc(firestore, 'appConfig', 'limitation'),
           remoteValues: doc(firestore, 'appConfig', 'remoteValues'),
           registration: doc(firestore, 'appConfig', 'registration'),
+          offer: doc(firestore, 'appConfig', 'offer'),
         };
 
-        const [linksSnap, limitationSnap, remoteValuesSnap, registrationSnap] = await Promise.all([
+        const [linksSnap, limitationSnap, remoteValuesSnap, registrationSnap, offerSnap] = await Promise.all([
           getDoc(docRefs.links),
           getDoc(docRefs.limitation),
           getDoc(docRefs.remoteValues),
           getDoc(docRefs.registration),
+          getDoc(docRefs.offer),
         ]);
 
         let combinedConfig: AppConfig = { ...defaultConfig };
@@ -112,6 +119,12 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
         } else {
           mustInitialize = true;
         }
+
+        if (offerSnap.exists()) {
+          combinedConfig = { ...combinedConfig, ...offerSnap.data() };
+        } else {
+          mustInitialize = true;
+        }
         
         setConfigState({ config: combinedConfig, isConfigLoading: false, configError: null });
 
@@ -122,6 +135,7 @@ export const ConfigProvider: React.FC<{ children: ReactNode }> = ({ children }) 
           if (!limitationSnap.exists()) batch.set(docRefs.limitation, defaultLimitConfig);
           if (!remoteValuesSnap.exists()) batch.set(docRefs.remoteValues, defaultRemoteValuesConfig);
           if (!registrationSnap.exists()) batch.set(docRefs.registration, defaultRegistrationConfig);
+          if (!offerSnap.exists()) batch.set(docRefs.offer, defaultOfferConfig);
           await batch.commit();
           console.log("Default configs initialized.");
         }
@@ -156,5 +170,3 @@ export const useAppConfig = (): ConfigContextState => {
   }
   return context;
 };
-
-    

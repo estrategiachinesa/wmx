@@ -4,7 +4,7 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useAppConfig } from '@/firebase';
-import { Check, ShieldCheck, Zap, BarChart, Clock, Users, Gift, Timer, ArrowLeft } from 'lucide-react';
+import { Check, ShieldCheck, Zap, BarChart, Clock, Users, Gift, Timer, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 const Feature = ({ icon: Icon, title, description }: { icon: React.ElementType; title: string; description: string }) => (
@@ -84,7 +84,13 @@ export default function VipPage() {
 
             <div className="bg-card/50 p-6 rounded-lg border border-border flex flex-col justify-center text-center">
               <p className="text-xs md:text-sm text-muted-foreground">OFERTA ESPECIAL POR TEMPO LIMITADO</p>
-              <p className="text-4xl md:text-5xl font-bold text-foreground my-2">R$ 197</p>
+              {isConfigLoading ? (
+                <div className="flex justify-center items-center my-4 h-12">
+                    <Loader2 className="h-8 w-8 animate-spin" />
+                </div>
+              ) : (
+                <p className="text-4xl md:text-5xl font-bold text-foreground my-2">{config?.price}</p>
+              )}
               <p className="text-sm md:text-base text-muted-foreground">Pagamento único, acesso vitalício.</p>
 
               <Button

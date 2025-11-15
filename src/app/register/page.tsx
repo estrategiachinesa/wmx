@@ -12,8 +12,11 @@ import { LineChart, Loader2, Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { useFirebase } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
+
+type RegistrationStep = 'codeValidation' | 'terms' | 'form';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -21,15 +24,47 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [credentials, setCredentials] = useState({ email: '', password: '', confirmPassword: '' });
   const [showPassword, setShowPassword] = useState(false);
-  const [isWelcomeModalOpen, setWelcomeModalOpen] = useState(true);
   const [hasAgreed, setHasAgreed] = useState(false);
-  const { auth, isUserLoading, user } = useFirebase();
+  const { auth, isUserLoading, user, firestore } = useFirebase();
+
+  const [registrationStep, setRegistrationStep] = useState<RegistrationStep>('codeValidation');
+  const [activationCode, setActivationCode] = useState('');
+  const [isCodeLoading, setIsCodeLoading] = useState(false);
 
   useEffect(() => {
     if (!isUserLoading && user) {
         router.push('/analisador');
     }
   }, [user, isUserLoading, router]);
+
+  const handleCodeValidation = async () => {
+    if (!activationCode) {
+        toast({ variant: 'destructive', title: 'Código Inválido', description: 'Por favor, insira um código de ativação.' });
+        return;
+    }
+    setIsCodeLoading(true);
+    try {
+        const codeRef = doc(firestore, 'registrationCodes', activationCode);
+        const codeDoc = await getDoc(codeRef);
+
+        if (codeDoc.exists() && !codeDoc.data().isUsed) {
+            // Mark code as used in a temporary way on the client, will be finalized on registration
+            localStorage.setItem('activationCode', activationCode);
+            setRegistrationStep('terms');
+            toast({ title: 'Código Validado!', description: 'Prossiga para o próximo passo.' });
+        } else if (codeDoc.exists() && codeDoc.data().isUsed) {
+            toast({ variant: 'destructive', title: 'Código Já Utilizado', description: 'Este código de ativação já foi usado. Entre em contato com o suporte.' });
+        } else {
+            toast({ variant: 'destructive', title: 'Código Inválido', description: 'O código de ativação não foi encontrado. Verifique e tente novamente.' });
+        }
+    } catch (error) {
+        console.error("Code validation error:", error);
+        toast({ variant: 'destructive', title: 'Erro de Validação', description: 'Ocorreu um erro ao validar o código. Tente novamente.' });
+    } finally {
+        setIsCodeLoading(false);
+    }
+  };
+
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -52,10 +87,25 @@ export default function RegisterPage() {
         return;
     }
 
+    const validatedCode = localStorage.getItem('activationCode');
+    if (!validatedCode) {
+        toast({ variant: 'destructive', title: 'Validação Necessária', description: 'Ocorreu um erro. Por favor, valide seu código novamente.' });
+        setRegistrationStep('codeValidation');
+        return;
+    }
+
     setIsLoading(true);
     try {
-        await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
+        const userCredential = await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
+        const newUser = userCredential.user;
+
+        // Mark the code as used in Firestore
+        const codeRef = doc(firestore, 'registrationCodes', validatedCode);
+        await setDoc(codeRef, { isUsed: true, usedBy: newUser.uid }, { merge: true });
+
         localStorage.setItem('loginTimestamp', Date.now().toString());
+        localStorage.removeItem('activationCode'); // Clean up
+
         toast({
           title: 'Cadastro bem-sucedido!',
           description: 'Redirecionando para o analisador...',
@@ -73,13 +123,17 @@ export default function RegisterPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, credentials, auth, toast]);
+  }, [isLoading, credentials, auth, toast, firestore]);
 
     useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if (event.key === 'Enter') {
         event.preventDefault();
-        handleRegister();
+        if (registrationStep === 'form') {
+            handleRegister();
+        } else if (registrationStep === 'codeValidation') {
+            handleCodeValidation();
+        }
       }
     };
     
@@ -88,7 +142,7 @@ export default function RegisterPage() {
     return () => {
       window.removeEventListener('keydown', handleKeyPress);
     };
-  }, [handleRegister]);
+  }, [handleRegister, handleCodeValidation, registrationStep]);
 
   if (isUserLoading) {
       return (
@@ -103,8 +157,66 @@ export default function RegisterPage() {
       return null; // Redirects are handled in useEffect
   }
 
+  const renderCodeValidation = () => (
+      <Dialog open={true}>
+        <DialogContent hideCloseButton={true}>
+          <DialogHeader className="text-center items-center">
+            <DialogTitle className="text-2xl font-headline">Ativação de Licença</DialogTitle>
+            <DialogDescription className="text-base">
+              Para criar sua conta, por favor, insira o código de ativação que você recebeu após a compra na Hotmart.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 pt-2">
+            <Label htmlFor="activation-code">Código de Ativação</Label>
+            <Input
+                id="activation-code"
+                placeholder="Insira seu código aqui"
+                value={activationCode}
+                onChange={(e) => setActivationCode(e.target.value)}
+                disabled={isCodeLoading}
+            />
+          </div>
+          <DialogFooter className="pt-4">
+              <Button className="w-full" onClick={handleCodeValidation} disabled={isCodeLoading}>
+                {isCodeLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Validar Código'}
+              </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+  );
+
+  const renderTerms = () => (
+      <Dialog open={true}>
+        <DialogContent hideCloseButton={true}>
+          <DialogHeader className="text-center items-center">
+            <DialogTitle className="text-2xl font-headline">Atenção!</DialogTitle>
+            <DialogDescription className="text-base">
+              Para garantir que sua licença seja ativada corretamente, utilize no campo de e-mail o mesmo endereço de e-mail que você usou para comprar o acesso vitalício na Hotmart.
+            </DialogDescription>
+          </DialogHeader>
+           <div className="flex items-center space-x-2 pt-4">
+                <Checkbox id="terms" checked={hasAgreed} onCheckedChange={(checked) => setHasAgreed(checked as boolean)} />
+                <label
+                    htmlFor="terms"
+                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                    Li e concordo com os <Link href="/legal" target="_blank" className="text-primary underline">Termos de Uso</Link>.
+                </label>
+            </div>
+          <DialogFooter className="pt-4">
+              <Button className="w-full" onClick={() => setRegistrationStep('form')} disabled={!hasAgreed}>
+                Entendido
+              </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+  );
+
   return (
     <>
+      {registrationStep === 'codeValidation' && renderCodeValidation()}
+      {registrationStep === 'terms' && renderTerms()}
+      
       <div className="fixed inset-0 -z-10 h-full w-full grid-bg">
         <div className="absolute inset-0 -z-10 bg-gradient-to-br from-background via-background/80 to-background" />
       </div>
@@ -196,31 +308,8 @@ export default function RegisterPage() {
           </CardContent>
         </Card>
       </div>
-
-       <Dialog open={isWelcomeModalOpen}>
-        <DialogContent hideCloseButton={true}>
-          <DialogHeader className="text-center items-center">
-            <DialogTitle className="text-2xl font-headline">Atenção!</DialogTitle>
-            <DialogDescription className="text-base">
-              Para garantir que sua licença seja ativada corretamente, utilize no campo de e-mail o mesmo endereço de e-mail que você usou para comprar o acesso vitalício na Hotmart.
-            </DialogDescription>
-          </DialogHeader>
-           <div className="flex items-center space-x-2 pt-4">
-                <Checkbox id="terms" checked={hasAgreed} onCheckedChange={(checked) => setHasAgreed(checked as boolean)} />
-                <label
-                    htmlFor="terms"
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                    Li e concordo com os <Link href="/legal" target="_blank" className="text-primary underline">Termos de Uso</Link>.
-                </label>
-            </div>
-          <DialogFooter className="pt-4">
-              <Button className="w-full" onClick={() => setWelcomeModalOpen(false)} disabled={!hasAgreed}>
-                Entendido
-              </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
+
+    

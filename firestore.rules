@@ -3,36 +3,19 @@
  * @fileoverview Firestore Security Rules for Estratégia Chinesa.
  *
  * Core Philosophy:
-<<<<<<< HEAD
- * This ruleset enforces access control for VIP requests and app configuration. 
- * The default state is to deny all access, with explicit permissions granted 
- * for specific paths and operations.
- *
- * Data Structure:
- * - /appConfig/{configDoc}: Stores global app configuration like affiliate URLs.
- * - /vipRequests/{userId}: Stores VIP access requests.
- * - /ipBlacklist/{ipAddress}: Stores banned IP addresses.
- *
- * Key Security Decisions:
- * - Public read access for app configuration and IP blacklist.
- * - Writes to app configuration and IP blacklist require authentication (admin only recommended).
- * - Users can create or update their own VIP request document in /vipRequests/{userId}
- *   if they are authenticated and the document ID matches their request.auth.uid.
-=======
  * This ruleset enforces access control for VIP requests and app configuration.
  *
  * Data Structure:
- * - `/appConfig/links`: Stores global app configuration like affiliate URLs.
- * - `/appConfig/limitation`: Stores global app configuration like usage limits.
+ * - `/appConfig/{doc}`: Stores global app configurations.
  * - `/vipRequests/{userId}`: Stores VIP access requests.
+ * - `/registrationCodes/{code}`: Stores unique codes for registration.
  *
  * Key Security Decisions:
  * - Public read access for app configuration.
  * - Writes to app configuration require authentication.
- * - Users can create or update their own VIP request document in `/vipRequests/{userId}`
- *   if they are authenticated and the document ID matches their `request.auth.uid`.
->>>>>>> e23a176 (nao deu o push)
- * - Reading of VIP requests is restricted to the user who owns the document.
+ * - Users can create or update their own VIP request document.
+ * - Reading of VIP requests is restricted to the owner.
+ * - Registration codes can be read by anyone, but only marked as used by an admin/function.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -58,24 +41,28 @@ service cloud.firestore {
       /**
        * @allow (get): A user can read their own VIP request document.
        * @allow (write): A user can create or update their own VIP request.
-       *   - The user must be signed in.
-       *   - The document ID must match the user's UID.
-       *   - The brokerId must be a string with at least 8 digits.
-       *   - The status can only be set to 'PENDING' by the user on create.
-       *   - The status can be set to 'DEPOSIT_PENDING' on update only if the previous status was 'AWAITING_DEPOSIT'.
        */
       allow get: if isSignedIn() && isOwner(userId);
       allow write: if isSignedIn() && isOwner(userId) && isValidVipRequest(request, resource);
     }
     
     /**
-     * @description Rules for IP Blacklist.
-     * @description Allows public read for middleware, restricts writes.
-     * @path /ipBlacklist/{ipAddress}
+     * @description Rules for registration codes.
+     * @path /registrationCodes/{code}
      */
-    match /ipBlacklist/{ipAddress} {
-      allow read: if true;
-      allow write: if false; // IMPORTANT: Set to `if request.auth.token.isAdmin == true` after creating an admin role
+    match /registrationCodes/{code} {
+      /**
+       * @allow (get): Any user can check if a code exists.
+       * @allow (update): Allow an authenticated user to mark a code as used for themselves.
+       *   This is triggered after successful account creation.
+       * @allow (create): Disallow client-side creation. Should be done server-side/manually.
+       */
+      allow get: if true;
+      allow create: if false; // Codes should be created via a secure admin process
+      allow update: if isSignedIn() && 
+                    request.resource.data.isUsed == true &&
+                    request.resource.data.usedBy == request.auth.uid &&
+                    !resource.data.isUsed; // Can only mark an unused code as used
     }
     
     // Helper functions.
@@ -104,8 +91,9 @@ service cloud.firestore {
                                    req.resource.data.status == 'PENDING' &&
                                    isBrokerIdValid;
 
-
       return isCreating || isUpdatingToDepositPending || isResubmittingRejected;
     }
   }
 }
+
+    

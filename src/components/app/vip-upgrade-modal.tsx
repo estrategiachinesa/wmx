@@ -135,7 +135,7 @@ export function VipUpgradeModal({
         <div className="flex w-full items-center space-x-2">
             <Input
             type="text"
-            placeholder="ID da Corretora (mín. 8 dígitos)"
+            placeholder="ID da Corretora"
             value={brokerId}
             onChange={(e) => setBrokerId(e.target.value.replace(/\D/g, ''))}
             pattern="[0-9]*"

@@ -43,7 +43,7 @@ type FormData = {
   expirationTime: ExpirationTime;
 };
 
-export default function FreePage() {
+export default function DemoPage() {
   const router = useRouter();
   const { config } = useAppConfig();
   const [appState, setAppState] = useState<'form' | 'loading' | 'result'>('form');

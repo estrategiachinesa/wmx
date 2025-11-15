@@ -12,6 +12,8 @@ import { Loader2, Eye, EyeOff, ShieldAlert, KeyRound, Info } from 'lucide-react'
 import { useFirebase, useAppConfig } from '@/firebase';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import Link from 'next/link';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const USER_DOMAIN = 'estrategiachinesa.app';
 
@@ -30,6 +32,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isInfoModalOpen, setInfoModalOpen] = useState(true);
+  const [hasAgreed, setHasAgreed] = useState(false);
 
   const secret = params.secret as string;
 
@@ -143,8 +146,14 @@ export default function RegisterPage() {
                 </div>
               </DialogDescription>
             </DialogHeader>
+            <div className="flex items-center space-x-2 pt-4">
+                <Checkbox id="terms" onCheckedChange={(checked) => setHasAgreed(checked as boolean)} />
+                <Label htmlFor="terms" className="text-sm leading-normal">
+                    Li e concordo que meu usuário deve seguir o exemplo acima.
+                </Label>
+            </div>
             <DialogFooter>
-              <Button onClick={() => setInfoModalOpen(false)}>Entendi</Button>
+              <Button onClick={() => setInfoModalOpen(false)} disabled={!hasAgreed}>Entendi</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -227,3 +236,5 @@ export default function RegisterPage() {
     </>
   );
 }
+
+    

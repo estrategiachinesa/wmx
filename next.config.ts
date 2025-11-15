@@ -1,8 +1,7 @@
 import type {NextConfig} from 'next';
 
+// This is a dynamic Next.js project configured for Firebase App Hosting.
 const nextConfig: NextConfig = {
-  output: 'export',
-  basePath: '/ia',
   typescript: {
     ignoreBuildErrors: true,
   },

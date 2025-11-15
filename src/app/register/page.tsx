@@ -158,8 +158,8 @@ export default function RegisterPage() {
   }
 
   const renderCodeValidation = () => (
-      <Dialog open={true}>
-        <DialogContent hideCloseButton={true}>
+      <Dialog open={true} onOpenChange={(isOpen) => !isOpen && router.push('/')}>
+        <DialogContent hideCloseButton={false}>
           <DialogHeader className="text-center items-center">
             <DialogTitle className="text-2xl font-headline">Ativação de Licença</DialogTitle>
             <DialogDescription className="text-base">

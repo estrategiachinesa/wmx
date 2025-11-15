@@ -12,4 +12,5 @@ const nextConfig: NextConfig = {
   },
 };
 
+// Forcing a new commit
 export default nextConfig;

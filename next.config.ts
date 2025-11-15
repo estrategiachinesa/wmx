@@ -14,5 +14,5 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Forcing a new commit
+// Forçando a sincronização para resolver o erro de push (non-fast-forward)
 export default nextConfig;

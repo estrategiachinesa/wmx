@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { cn } from '@/lib/utils';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import type { Metadata } from 'next';
+import { DevToolsBlocker } from '@/components/app/dev-tools-blocker';
 
 export const metadata: Metadata = {
   title: 'Estratégia Chinesa | Sinais de IA para Opções Binárias',
@@ -29,6 +30,7 @@ export default function RootLayout({
           {children}
         </FirebaseClientProvider>
         <Toaster />
+        <DevToolsBlocker />
       </body>
     </html>
   );

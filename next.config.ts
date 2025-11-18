@@ -1,6 +1,6 @@
 import type { NextConfig } from 'next';
 
-const repo = 'iachinesa';
+const repo = 'ia';
 const assetPrefix = `/${repo}/`;
 const basePath = `/${repo}`;
 

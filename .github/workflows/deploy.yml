@@ -1,4 +1,5 @@
 # Workflow para construir e implantar um site Next.js no GitHub Pages
+# Forçando novo build
 name: Deploy Next.js site to Pages
 
 on:
@@ -35,8 +36,6 @@ jobs:
         run: npm install
       - name: Build with Next.js
         run: npm run build
-        env:
-          BASE_PATH: /ia
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

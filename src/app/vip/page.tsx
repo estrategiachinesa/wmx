@@ -99,7 +99,7 @@ export default function VipPage() {
                 className="w-full mt-6 h-12 md:h-14 text-base md:text-lg font-bold bg-gradient-to-r from-yellow-400 to-yellow-500 text-black hover:to-yellow-600 shadow-lg shadow-yellow-500/20 transform hover:scale-105 transition-all duration-300"
                 disabled={isConfigLoading}
               >
-                <Link href={config?.hotmartUrl || '#'} target="_blank">
+                <Link href="https://go.hotmart.com/D103007301M?dp=1" target="_blank">
                   <Zap className="mr-2" />
                   QUERO ACESSO VIP AGORA
                 </Link>
